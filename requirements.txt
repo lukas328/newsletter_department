@@ -1,0 +1,5 @@
+# newsletter_project/requirements.txt
+python-dotenv
+pydantic
+requests
+langchain-google-genai
