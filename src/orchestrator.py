@@ -6,9 +6,10 @@ from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict 
 
 from src.utils.config_loader import load_env, get_env_variable 
-from src.models.data_models import RawArticle, ProcessedArticle # ProcessedArticle hinzugefügt
+from src.models.data_models import RawArticle, ProcessedArticle 
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher 
-from src.agents.llm_processors.summarizer_agent import SummarizerAgent # Summarizer importiert
+from src.agents.llm_processors.summarizer_agent import SummarizerAgent
+from src.agents.llm_processors.categorizer_agent import CategorizerAgent # Categorizer importiert
 
 logger = logging.getLogger(__name__)
 
@@ -18,28 +19,36 @@ class NewsletterOrchestrator:
         logger.info("Initialisiere Newsletter Orchestrator...")
 
         self.news_api_fetchers: List[NewsAPIFetcher] = [
-            NewsAPIFetcher(query="Künstliche Intelligenz OR Technologie", language="de", endpoint="everything", days_ago=1, page_size=5, source_name_override="KI & Tech News (DE)"), # page_size reduziert für Tests
-            NewsAPIFetcher(country="ch", category="technology", endpoint="top-headlines", page_size=3, source_name_override="Schweiz Tech-Schlagzeilen"), # spezifischer
-            NewsAPIFetcher(query="global innovation OR science breakthrough", language="en", endpoint="everything", days_ago=1, page_size=5, source_name_override="Internationale Innovation (EN)")
+            NewsAPIFetcher(query="Künstliche Intelligenz OR Technologie", language="de", endpoint="everything", days_ago=1, page_size=3, source_name_override="KI & Tech News (DE)"), # page_size reduziert für Tests
+            NewsAPIFetcher(country="ch", category="technology", endpoint="top-headlines", page_size=2, source_name_override="Schweiz Tech-Schlagzeilen"), 
+            NewsAPIFetcher(query="global innovation OR science breakthrough", language="en", endpoint="everything", days_ago=1, page_size=3, source_name_override="Internationale Innovation (EN)")
         ]
         
-        # Initialisiere den Summarizer Agent
         try:
             self.summarizer = SummarizerAgent() 
             logger.info("SummarizerAgent erfolgreich initialisiert.")
         except Exception as e:
             logger.critical(f"Fehler bei der Initialisierung des SummarizerAgent: {e}", exc_info=True)
-            self.summarizer = None # Setze auf None, damit die Pipeline es handhaben kann
+            self.summarizer = None
+        
+        try:
+            # Lade Kategorien aus .env oder verwende einen Default
+            categories_str = get_env_variable("NEWSLETTER_CATEGORIES", "IT & AI,Welt und Politik,Wirtschaft,Zürich Inside,Kultur und Inspiration,Der Rund um Blick")
+            self.newsletter_categories = [cat.strip() for cat in categories_str.split(',')]
+            if not self.newsletter_categories or not all(self.newsletter_categories): # Prüft auf leere Liste oder leere Strings
+                logger.warning("Keine gültigen Kategorien gefunden. Verwende Fallback-Kategorien.")
+                self.newsletter_categories = ["Allgemein"] # Fallback
 
-        # Platzhalter für weitere Agenten
-        # self.categorizer = ...
-        # self.evaluator = ...
-        # self.composer = ...
-        # self.distributor = ...
+            self.categorizer = CategorizerAgent(categories=self.newsletter_categories)
+            logger.info(f"CategorizerAgent erfolgreich initialisiert mit Kategorien: {self.newsletter_categories}")
+        except Exception as e:
+            logger.critical(f"Fehler bei der Initialisierung des CategorizerAgent: {e}", exc_info=True)
+            self.categorizer = None
 
         logger.info(f"Newsletter Orchestrator initialisiert.")
 
     def _fetch_all_data(self) -> List[RawArticle]:
+        # ... (Code bleibt gleich wie in Schritt 5) ...
         all_fetched_articles: List[RawArticle] = []
         logger.info("Starte Datensammlung von allen konfigurierten Quellen...")
         for fetcher in self.news_api_fetchers:
@@ -56,21 +65,38 @@ class NewsletterOrchestrator:
         logger.info(f"Insgesamt {len(all_fetched_articles)} Rohartikel von allen Quellen gesammelt.")
         return all_fetched_articles
 
+
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
-        """Verarbeitet Rohartikel mit LLM-Agenten (z.B. Zusammenfassung)."""
+        """Verarbeitet Rohartikel mit LLM-Agenten (Zusammenfassung, dann Kategorisierung)."""
+        
+        # 1. Zusammenfassen
         if not self.summarizer:
-            logger.error("SummarizerAgent nicht verfügbar. Überspringe LLM-Verarbeitung.")
-            # Wandle RawArticles in ProcessedArticles ohne Zusammenfassung um, oder gib leere Liste zurück
-            return [
+            logger.error("SummarizerAgent nicht verfügbar. Überspringe Zusammenfassung.")
+            # Erstelle ProcessedArticles ohne echte Zusammenfassung, aber mit Platzhalter
+            summarized_articles = [
                 ProcessedArticle(title=ra.title or "N/A", summary="Zusammenfassung nicht verfügbar (Summarizer-Fehler).", url=ra.url, source_name=ra.source_name, published_at=ra.published_at) 
                 for ra in raw_articles
             ]
+        else:
+            logger.info(f"Starte LLM-Verarbeitung (Zusammenfassung) für {len(raw_articles)} Artikel...")
+            summarized_articles = self.summarizer.process_batch(raw_articles)
+            logger.info(f"{len(summarized_articles)} Artikel erfolgreich zusammengefasst.")
 
-        logger.info(f"Starte LLM-Verarbeitung (Zusammenfassung) für {len(raw_articles)} Artikel...")
-        # Rufe die Batch-Verarbeitungsmethode des Summarizers auf
-        processed_articles = self.summarizer.process(raw_articles)
-        logger.info(f"{len(processed_articles)} Artikel erfolgreich zusammengefasst.")
-        return processed_articles
+        if not summarized_articles:
+            logger.warning("Keine Artikel nach der Zusammenfassung übrig.")
+            return []
+
+        # 2. Kategorisieren (nimmt die zusammengefassten Artikel)
+        if not self.categorizer:
+            logger.error("CategorizerAgent nicht verfügbar. Überspringe Kategorisierung.")
+            # Die Artikel haben bereits eine Default-Kategorie "Unkategorisiert" aus dem Pydantic-Modell
+            return summarized_articles
+        else:
+            logger.info(f"Starte LLM-Verarbeitung (Kategorisierung) für {len(summarized_articles)} Artikel...")
+            # Der CategorizerAgent modifiziert die ProcessedArticle-Objekte direkt (fügt Kategorie hinzu)
+            categorized_articles = self.categorizer.process_batch(summarized_articles)
+            logger.info(f"{len(categorized_articles)} Artikel erfolgreich kategorisiert.")
+            return categorized_articles
 
 
     def run_pipeline(self) -> Optional[str]:
@@ -78,51 +104,45 @@ class NewsletterOrchestrator:
         start_time = datetime.now(timezone.utc)
 
         # --- Schritt 1: Daten sammeln ---
-        logger.info("Phase 1: Daten sammeln...")
         raw_articles = self._fetch_all_data()
-        
         if not raw_articles:
-            logger.warning("Keine Rohartikel zum Verarbeiten gefunden. Pipeline wird beendet.")
-            # ... (Rest der Fehlerbehandlung und Rückgabe)
+            logger.warning("Keine Rohartikel zum Verarbeiten gefunden.")
             return "Keine Daten gefunden"
-        
         logger.info(f"{len(raw_articles)} Rohartikel gesammelt.")
-        for i, article in enumerate(raw_articles[:2]): # Erste 2 Artikel zur Kontrolle loggen
+        for i, article in enumerate(raw_articles[:1]): # Nur den ersten Artikel zur Kontrolle loggen
             logger.debug(f"  Rohartikel {i+1}: {article.title} (Quelle: {article.source_name}, Datum: {article.published_at})")
 
         # --- Schritt 2: Daten verarbeiten mit LLMs ---
-        logger.info("Phase 2: Daten mit LLMs verarbeiten (Zusammenfassen)...")
         processed_articles = self._process_articles_with_llm(raw_articles)
-        
         if not processed_articles:
-            logger.warning("Keine Artikel nach der LLM-Verarbeitung (Zusammenfassung). Pipeline wird beendet.")
-            return "Keine verarbeiteten Daten nach Zusammenfassung"
-            
-        logger.info(f"{len(processed_articles)} Artikel nach Zusammenfassung vorhanden.")
-        for i, article in enumerate(processed_articles[:2]): # Erste 2 verarbeitete Artikel loggen
-            logger.debug(f"  Verarbeiteter Artikel {i+1}: {article.title} - Zusammenfassung (erste 50 Zeichen): '{article.summary[:50]}...'")
+            logger.warning("Keine Artikel nach der LLM-Verarbeitung. Pipeline wird beendet.")
+            return "Keine verarbeiteten Daten nach LLM-Stufen"
+        logger.info(f"{len(processed_articles)} Artikel nach LLM-Verarbeitung vorhanden.")
+        for i, article in enumerate(processed_articles[:1]): # Ersten verarbeiteten Artikel loggen
+            logger.debug(f"  Verarbeiteter Artikel {i+1}: '{article.title}' - Zusammenfassung (erste 50 Zeichen): '{article.summary[:50]}...' - Kategorie: {article.category}")
         
         # --- Schritt 3: Daten evaluieren (Platzhalter) ---
-        final_items_for_newsletter = processed_articles # Vorerst die zusammengefassten Artikel verwenden
+        final_items_for_newsletter = processed_articles 
 
         # --- Schritt 4: Newsletter komponieren (Platzhalter) ---
         logger.info("Phase 4: Newsletter komponieren (Platzhalter)...")
-        newsletter_output_path = "tmp/platzhalter_newsletter_mit_zusammenfassungen.txt" 
+        newsletter_output_path = "tmp/platzhalter_newsletter_mit_kategorien.txt" 
         try:
             with open(newsletter_output_path, "w", encoding="utf-8") as f:
                 f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
                 f.write("==============================================================\n\n")
                 if final_items_for_newsletter:
-                    for item in final_items_for_newsletter: # Iteriere jetzt über ProcessedArticle-Objekte
+                    for item in final_items_for_newsletter: 
                         f.write(f"Titel: {item.title if item.title else 'Kein Titel'}\n")
                         f.write(f"Quelle: {item.source_name if item.source_name else 'Unbekannt'}\n")
+                        f.write(f"Kategorie: {item.category}\n") # Kategorie hinzugefügt
                         f.write(f"URL: {str(item.url) if item.url else 'Keine URL'}\n")
                         f.write(f"Datum: {item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Kein Datum'}\n")
                         f.write(f"ZUSAMMENFASSUNG: {item.summary}\n")
                         f.write("--------------------------------------------------------------\n")
                 else:
                     f.write("Keine Artikel für diesen Newsletter gefunden.\n")
-            logger.info(f"Platzhalter-Newsletter (mit Zusammenfassungen) erstellt unter: {newsletter_output_path}")
+            logger.info(f"Platzhalter-Newsletter (mit Kategorien) erstellt unter: {newsletter_output_path}")
         except Exception as e:
             logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)
             newsletter_output_path = "Fehler beim Schreiben"

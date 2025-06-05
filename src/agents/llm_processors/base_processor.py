@@ -62,7 +62,7 @@ class BaseLLMProcessor(ABC):
             raise # Fehler weiterwerfen, um das Problem im Orchestrator sichtbar zu machen
 
     @abstractmethod
-    def process(self, data: Any, **kwargs) -> Any:
+    def process_batch(self, data: Any, **kwargs) -> Any:
         """
         Abstrakte Methode zur Verarbeitung der Eingabedaten mit dem LLM.
         Muss von abgeleiteten Klassen implementiert werden.
