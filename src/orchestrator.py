@@ -6,8 +6,9 @@ from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict 
 
 from src.utils.config_loader import load_env, get_env_variable
-from src.models.data_models import RawArticle, ProcessedArticle
+from src.models.data_models import RawArticle, ProcessedArticle, Event
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
+from src.agents.data_fetchers.google_calendar_fetcher import GoogleCalendarFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
@@ -28,9 +29,22 @@ class NewsletterOrchestrator:
 
         self.news_api_fetchers: List[NewsAPIFetcher] = [
             NewsAPIFetcher(query="Künstliche Intelligenz OR Technologie", language="de", endpoint="everything", days_ago=1, page_size=3, source_name_override="KI & Tech News (DE)"), # page_size reduziert für Tests
-            NewsAPIFetcher(country="ch", category="technology", endpoint="top-headlines", page_size=2, source_name_override="Schweiz Tech-Schlagzeilen"), 
+            NewsAPIFetcher(country="ch", category="technology", endpoint="top-headlines", page_size=2, source_name_override="Schweiz Tech-Schlagzeilen"),
             NewsAPIFetcher(query="global innovation OR science breakthrough", language="en", endpoint="everything", days_ago=1, page_size=3, source_name_override="Internationale Innovation (EN)")
         ]
+
+        # Optional: Google Calendar Fetcher für Termine
+        calendar_creds = get_env_variable("GOOGLE_CALENDAR_CREDENTIALS_JSON")
+        if calendar_creds:
+            cal_id = get_env_variable("GOOGLE_CALENDAR_ID", "primary")
+            try:
+                self.calendar_fetcher = GoogleCalendarFetcher(calendar_creds, cal_id)
+                logger.info("GoogleCalendarFetcher erfolgreich initialisiert.")
+            except Exception as e:
+                logger.error(f"Fehler bei der Initialisierung des GoogleCalendarFetcher: {e}")
+                self.calendar_fetcher = None
+        else:
+            self.calendar_fetcher = None
         
         try:
             self.summarizer = SummarizerAgent() 
@@ -112,6 +126,18 @@ class NewsletterOrchestrator:
         if removed:
             logger.info(f"{removed} Artikel aufgrund der Quellen-Blacklist entfernt.")
         return filtered
+
+    def _fetch_calendar_events(self) -> List[Event]:
+        """Ruft die nächsten Termine aus Google Calendar ab, falls konfiguriert."""
+        if not self.calendar_fetcher:
+            return []
+        try:
+            events = self.calendar_fetcher.fetch_data()
+            logger.info(f"{len(events)} Termine aus Google Calendar abgerufen.")
+            return events
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen der Calendar-Daten: {e}")
+            return []
 
 
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
@@ -199,10 +225,12 @@ class NewsletterOrchestrator:
         for i, article in enumerate(processed_articles[:1]): # Ersten verarbeiteten Artikel loggen
             logger.debug(f"  Verarbeiteter Artikel {i+1}: '{article.title}' - Zusammenfassung (erste 50 Zeichen): '{article.summary[:50]}...' - Kategorie: {article.category}")
         
-        # --- Schritt 3: Daten evaluieren (Platzhalter) ---
-        final_items_for_newsletter = processed_articles 
+        # --- Schritt 3: Zusätzliche Daten abrufen ---
+        calendar_events = self._fetch_calendar_events()
 
-        # --- Schritt 4: Newsletter komponieren (Platzhalter) ---
+        # --- Schritt 4: Daten evaluieren (Platzhalter) ---
+
+        # --- Schritt 5: Newsletter komponieren (Platzhalter) ---
         output_format = get_env_variable("NEWSLETTER_OUTPUT_FORMAT", "txt").lower()
 
         if output_format == "epub":
@@ -211,10 +239,11 @@ class NewsletterOrchestrator:
                 articles_per_page = int(get_env_variable("EPUB_ARTICLES_PER_PAGE", "1"))
                 use_a4_css = get_env_variable("EPUB_USE_A4_CSS", "false").lower() == "true"
                 generate_epub(
-                    final_items_for_newsletter,
+                    processed_articles,
                     newsletter_output_path,
                     articles_per_page=articles_per_page,
                     use_a4_css=use_a4_css,
+                    events=calendar_events,
                 )
                 logger.info(f"EPUB erstellt unter: {newsletter_output_path}")
 
@@ -235,17 +264,22 @@ class NewsletterOrchestrator:
                 with open(newsletter_output_path, "w", encoding="utf-8") as f:
                     f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
                     f.write("===============================================================\n\n")
-                    if final_items_for_newsletter:
-                        for item in final_items_for_newsletter:
+                    if processed_articles:
+                        for item in processed_articles:
                             f.write(f"Titel: {item.title if item.title else 'Kein Titel'}\n")
                             f.write(f"Quelle: {item.source_name if item.source_name else 'Unbekannt'}\n")
                             f.write(f"Kategorie: {item.category}\n")
                             f.write(f"URL: {str(item.url) if item.url else 'Keine URL'}\n")
                             f.write(f"Datum: {item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Kein Datum'}\n")
                             f.write(f"ZUSAMMENFASSUNG: {item.summary}\n")
-                            f.write("---------------------------------------------------------------\n")
+                            f.write("------------------------------------------------------------\n")
                     else:
                         f.write("Keine Artikel für diesen Newsletter gefunden.\n")
+                    if calendar_events:
+                        f.write("\nTermine:\n")
+                        for evt in calendar_events:
+                            start = evt.start_time.strftime('%Y-%m-%d %H:%M') if evt.start_time else ''
+                            f.write(f"- {evt.summary} {start}\n")
                 logger.info(f"Platzhalter-Newsletter (mit Kategorien) erstellt unter: {newsletter_output_path}")
             except Exception as e:
                 logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)

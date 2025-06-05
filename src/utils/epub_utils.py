@@ -1,6 +1,6 @@
 from ebooklib import epub
-from typing import List
-from src.models.data_models import ProcessedArticle
+from typing import List, Optional
+from src.models.data_models import ProcessedArticle, Event
 
 
 def _build_a4_style() -> str:
@@ -18,6 +18,7 @@ def generate_epub(
     output_path: str,
     articles_per_page: int = 1,
     use_a4_css: bool = False,
+    events: Optional[List[Event]] = None,
 ) -> str:
     """Generiert eine EPUB-Datei aus Artikeln.
 
@@ -47,40 +48,35 @@ def generate_epub(
     for start in range(0, len(articles), articles_per_page):
         batch = articles[start : start + articles_per_page]
         idx = start // articles_per_page + 1
-        title = batch[0].title or f"Artikel {idx}"
         c = epub.EpubHtml(
-            title=title,
+            title=batch[0].title or f"Artikel {idx}",
             file_name=f"chap_{idx}.xhtml",
             lang="de",
         )
         parts = []
         for art in batch:
             summary = art.summary.replace("\n", "<br/>") if art.summary else ""
-            parts.append(f"<h1>{art.title}</h1><p>{summary}</p>")
+            text = art.article_text.replace("\n", "<br/>") if art.article_text else ""
+            parts.append(f"<h1>{art.title}</h1><p>{summary}</p><div>{text}</div>")
         content = "".join(parts)
         if use_a4_css and style_item:
-            c.content = (
-                f"<html><head><link rel='stylesheet' href='../style/a4.css' /></head><body>{content}</body></html>"
-            )
+            c.content = f"<html><head><link rel='stylesheet' href='../style/a4.css' /></head><body>{content}</body></html>"
         else:
             c.content = content
         if style_item:
             c.add_item(style_item)
+        book.add_item(c)
+        chapters.append(c)
 
-    for idx, article in enumerate(articles, start=1):
-        c = epub.EpubHtml(
-            title=article.title or f"Artikel {idx}",
-            file_name=f"chap_{idx}.xhtml",
-            lang="de",
-        )
-        summary = article.summary.replace("\n", "<br/>") if article.summary else ""
-        article_html = ""
-        if article.article_text:
-            cleaned_text = article.article_text.replace("\n", "<br/>")
-            article_html = f"<div>{cleaned_text}</div>"
-        content = f"<h1>{article.title}</h1><p>{summary}</p>{article_html}"
-        c.content = content
-
+    if events:
+        c = epub.EpubHtml(title="Termine", file_name="events.xhtml", lang="de")
+        parts = []
+        for evt in events:
+            start = evt.start_time.strftime("%Y-%m-%d %H:%M") if evt.start_time else ""
+            end = evt.end_time.strftime("%Y-%m-%d %H:%M") if evt.end_time else ""
+            time_str = f"{start} - {end}" if start or end else ""
+            parts.append(f"<p><b>{evt.summary}</b><br/>{time_str}</p>")
+        c.content = "<h1>Termine</h1>" + "".join(parts)
         book.add_item(c)
         chapters.append(c)
 
