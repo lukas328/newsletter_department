@@ -1,7 +1,11 @@
 from ebooklib import epub
+
+from typing import List, Optional, Tuple
+
+
 from typing import List, Optional
 
-from src.models.data_models import ProcessedArticle, Event,  TodoItem, WeatherInfo
+from src.models.data_models import ProcessedArticle, Event,  TodoItem, WeatherInfo,ProcessedArticle
 
 
 
@@ -21,6 +25,9 @@ def generate_epub(
     output_path: str,
     articles_per_page: int = 1,
     use_a4_css: bool = False,
+
+    extra_chapters: Optional[List[Tuple[str, str]]] = None,
+
     events: Optional[List[Event]] = None,
     todos: Optional[List[TodoItem]] = None,
     weather_infos: Optional[List[WeatherInfo]] = None,
@@ -35,6 +42,10 @@ def generate_epub(
         output_path: Zielpfad der EPUB-Datei.
         articles_per_page: Wie viele Artikel pro EPUB-Seite zusammengefasst werden.
         use_a4_css: Wenn True, wird ein einfaches A4-Stylesheet eingebunden.
+
+        extra_chapters: Optionale Liste zusätzlicher Kapitel als Tuple
+            ``(title, html_content)``.
+
         todos: Optionale Liste von TodoItems, die als letztes Kapitel eingefügt werden.
         weather_infos: Optionale Wettervorhersageeinträge, die als eigenes Kapitel eingefügt werden.
         quote_of_the_day: Optionaler Motivationstext als Einleitungsseite.
@@ -57,6 +68,31 @@ def generate_epub(
             content=_build_a4_style(),
         )
         book.add_item(style_item)
+
+
+    if extra_chapters:
+        for idx, (title, html) in enumerate(extra_chapters, start=1):
+            c = epub.EpubHtml(
+                title=title,
+                file_name=f"extra_{idx}.xhtml",
+                lang="de",
+            )
+            if use_a4_css and style_item:
+                c.content = (
+                    f"<html><head><link rel='stylesheet' href='../style/a4.css' /></head><body>{html}</body></html>"
+                )
+            else:
+                c.content = html
+            if style_item:
+                c.add_item(style_item)
+            book.add_item(c)
+            chapters.append(c)
+
+    chapter_count = len(chapters)
+    for start in range(0, len(articles), articles_per_page):
+        batch = articles[start : start + articles_per_page]
+        idx = chapter_count + (start // articles_per_page) + 1
+        title = batch[0].title or f"Artikel {idx}"
 
 
     if weather_infos:
@@ -91,6 +127,7 @@ def generate_epub(
     for start in range(0, len(articles), articles_per_page):
         batch = articles[start : start + articles_per_page]
         idx = start // articles_per_page + 1
+
         c = epub.EpubHtml(
             title=batch[0].title or f"Artikel {idx}",
             file_name=f"chap_{idx}.xhtml",
@@ -99,8 +136,16 @@ def generate_epub(
         parts = []
         for art in batch:
             summary = art.summary.replace("\n", "<br/>") if art.summary else ""
+
+            article_html = ""
+            if art.article_text:
+                cleaned_text = art.article_text.replace("\n", "<br/>")
+                article_html = f"<div>{cleaned_text}</div>"
+            parts.append(f"<h1>{art.title}</h1><p>{summary}</p>{article_html}")
+
             text = art.article_text.replace("\n", "<br/>") if art.article_text else ""
             parts.append(f"<h1>{art.title}</h1><p>{summary}</p><div>{text}</div>")
+
         content = "".join(parts)
         if use_a4_css and style_item:
             c.content = f"<html><head><link rel='stylesheet' href='../style/a4.css' /></head><body>{content}</body></html>"
@@ -108,6 +153,7 @@ def generate_epub(
             c.content = content
         if style_item:
             c.add_item(style_item)
+
         book.add_item(c)
         chapters.append(c)
 
@@ -120,6 +166,7 @@ def generate_epub(
             time_str = f"{start} - {end}" if start or end else ""
             parts.append(f"<p><b>{evt.summary}</b><br/>{time_str}</p>")
         c.content = "<h1>Termine</h1>" + "".join(parts)
+
         book.add_item(c)
         chapters.append(c)
 

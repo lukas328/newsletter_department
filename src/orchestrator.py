@@ -2,7 +2,7 @@
 # Steuert den gesamten Ablauf der Newsletter-Generierung.
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import List, Optional, Any, Dict 
 
 from src.utils.config_loader import load_env, get_env_variable
@@ -15,7 +15,11 @@ from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
 from src.utils.epub_utils import generate_epub
+from src.utils.birthday_utils import get_upcoming_birthdays
+from src.agents.data_fetchers.birthday_sheet_fetcher import BirthdaySheetFetcher
+
 from src.agents.data_fetchers.todoist_fetcher import TodoistFetcher
+
 from src.agents.distributors.gdrive_uploader import GDriveUploader
 
 logger = logging.getLogger(__name__)
@@ -95,12 +99,29 @@ class NewsletterOrchestrator:
             )
             self.article_writer = None
 
+        # Birthday fetcher initialisieren
+        self.birthday_fetcher = None
+        creds = get_env_variable("GOOGLE_SHEETS_CREDENTIALS_JSON")
+        sheet_id = get_env_variable("BIRTHDAY_SHEET_ID")
+        sheet_range = get_env_variable("BIRTHDAY_SHEET_RANGE", "A2:B")
+        if creds and sheet_id:
+            try:
+                self.birthday_fetcher = BirthdaySheetFetcher(creds, sheet_id, sheet_range)
+                logger.info("BirthdaySheetFetcher erfolgreich initialisiert.")
+            except Exception as e:
+                logger.error(
+                    f"Fehler bei der Initialisierung des BirthdaySheetFetcher: {e}",
+                    exc_info=True,
+                )
+                
+
         try:
             self.todo_fetcher = TodoistFetcher()
             logger.info("TodoistFetcher erfolgreich initialisiert.")
         except Exception as e:
             logger.error("Fehler bei der Initialisierung des TodoistFetchers: %s", e, exc_info=True)
             self.todo_fetcher = None
+
 
         # Wie viele Artikel sollen voll ausgeschrieben werden?
         top_n_str = get_env_variable("NEWSLETTER_TOP_ARTICLE_COUNT", "3")
@@ -269,6 +290,27 @@ class NewsletterOrchestrator:
         # --- Schritt 3: Daten evaluieren (Platzhalter) ---
         final_items_for_newsletter = processed_articles
 
+        extra_chapters = []
+        if self.birthday_fetcher:
+            try:
+                birthdays = self.birthday_fetcher.fetch_data()
+                upcoming = get_upcoming_birthdays(birthdays, 3)
+                if upcoming:
+                    from datetime import date
+
+                    html = "<h1>Bevorstehende Geburtstage</h1><ul>"
+                    for b in upcoming:
+                        try:
+                            d = date(date.today().year, b.date_month, b.date_day)
+                        except ValueError:
+                            continue
+                        html += f"<li>{b.name} - {d.strftime('%d.%m.')}</li>"
+                    html += "</ul>"
+                    extra_chapters.append(("Geburtstage", html))
+            except Exception as e_birth:
+                logger.error(f"Fehler beim Abrufen der Geburtstage: {e_birth}", exc_info=True)
+
+
         todos = []
         if self.todo_fetcher:
             try:
@@ -278,6 +320,7 @@ class NewsletterOrchestrator:
                 logger.error("Fehler beim Abrufen der Todos: %s", e, exc_info=True)
 
         weather_infos = self._fetch_weather()
+
 
         quote: Optional[Quote] = None
         try:
@@ -302,11 +345,15 @@ class NewsletterOrchestrator:
                     newsletter_output_path,
                     articles_per_page=articles_per_page,
                     use_a4_css=use_a4_css,
+
+                    extra_chapters=extra_chapters,
+
                     events=calendar_events,
                     todos=todos,
                     weather_infos=weather_infos,
                     quote_of_the_day=quote.text if quote else None,
                     quote_author=quote.author if quote else None,
+
 
 
 
