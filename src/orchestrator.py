@@ -10,6 +10,7 @@ from src.models.data_models import RawArticle, ProcessedArticle
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
+from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
 from src.utils.epub_utils import generate_epub
 from src.agents.distributors.gdrive_uploader import GDriveUploader
 
@@ -44,10 +45,21 @@ class NewsletterOrchestrator:
             self.categorizer = CategorizerAgent(categories=self.newsletter_categories)
             logger.info(f"CategorizerAgent erfolgreich initialisiert mit Kategorien: {self.newsletter_categories}")
         except Exception as e:
-            logger.critical(f"Fehler bei der Initialisierung des CategorizerAgent: {e}", exc_info=True)
+            logger.critical(
+                f"Fehler bei der Initialisierung des CategorizerAgent: {e}", exc_info=True
+            )
             self.categorizer = None
 
-        logger.info(f"Newsletter Orchestrator initialisiert.")
+        try:
+            self.article_writer = ArticleWriterAgent()
+            logger.info("ArticleWriterAgent erfolgreich initialisiert.")
+        except Exception as e:
+            logger.critical(
+                f"Fehler bei der Initialisierung des ArticleWriterAgent: {e}", exc_info=True
+            )
+            self.article_writer = None
+
+        logger.info("Newsletter Orchestrator initialisiert.")
 
     def _fetch_all_data(self) -> List[RawArticle]:
         # ... (Code bleibt gleich wie in Schritt 5) ...
@@ -91,14 +103,30 @@ class NewsletterOrchestrator:
         # 2. Kategorisieren (nimmt die zusammengefassten Artikel)
         if not self.categorizer:
             logger.error("CategorizerAgent nicht verfügbar. Überspringe Kategorisierung.")
-            # Die Artikel haben bereits eine Default-Kategorie "Unkategorisiert" aus dem Pydantic-Modell
-            return summarized_articles
+            categorized_articles = summarized_articles
         else:
-            logger.info(f"Starte LLM-Verarbeitung (Kategorisierung) für {len(summarized_articles)} Artikel...")
+            logger.info(
+                f"Starte LLM-Verarbeitung (Kategorisierung) für {len(summarized_articles)} Artikel..."
+            )
             # Der CategorizerAgent modifiziert die ProcessedArticle-Objekte direkt (fügt Kategorie hinzu)
             categorized_articles = self.categorizer.process_batch(summarized_articles)
             logger.info(f"{len(categorized_articles)} Artikel erfolgreich kategorisiert.")
-            return categorized_articles
+
+        # 3. Ausformulierten Artikeltext generieren
+        if self.article_writer:
+            logger.info(
+                f"Starte LLM-Verarbeitung (Artikelerstellung) für {len(categorized_articles)} Artikel..."
+            )
+            article_texts = self.article_writer.process_batch(categorized_articles)
+            for art, text in zip(categorized_articles, article_texts):
+                art.article_text = text
+                if art.llm_processing_details is None:
+                    art.llm_processing_details = {}
+                art.llm_processing_details["writer_model"] = self.article_writer.model_name
+        else:
+            logger.error("ArticleWriterAgent nicht verfügbar. Überspringe Artikelerstellung.")
+
+        return categorized_articles
 
 
     def run_pipeline(self) -> Optional[str]:

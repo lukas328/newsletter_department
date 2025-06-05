@@ -5,4 +5,5 @@ requests
 ebooklib
 google-api-python-client
 google-auth
+openai
 langchain_openai
