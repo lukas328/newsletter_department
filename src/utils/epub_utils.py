@@ -1,6 +1,6 @@
 from ebooklib import epub
-from typing import List
-from src.models.data_models import ProcessedArticle
+from typing import List, Optional
+from src.models.data_models import ProcessedArticle, WeatherInfo
 
 
 def _build_a4_style() -> str:
@@ -18,6 +18,7 @@ def generate_epub(
     output_path: str,
     articles_per_page: int = 1,
     use_a4_css: bool = False,
+    weather_infos: Optional[List[WeatherInfo]] = None,
 ) -> str:
     """Generiert eine EPUB-Datei aus Artikeln.
 
@@ -26,6 +27,7 @@ def generate_epub(
         output_path: Zielpfad der EPUB-Datei.
         articles_per_page: Wie viele Artikel pro EPUB-Seite zusammengefasst werden.
         use_a4_css: Wenn True, wird ein einfaches A4-Stylesheet eingebunden.
+        weather_infos: Optionale Wettervorhersageeinträge, die als eigenes Kapitel eingefügt werden.
     """
     book = epub.EpubBook()
     book.set_identifier("newsletter")
@@ -43,6 +45,23 @@ def generate_epub(
             content=_build_a4_style(),
         )
         book.add_item(style_item)
+
+    if weather_infos:
+        weather_html_parts = []
+        for info in weather_infos:
+            snippet = info.forecast_snippet or ""
+            weather_html_parts.append(f"<p>{snippet}</p>")
+        weather_content = "".join(weather_html_parts)
+        c = epub.EpubHtml(
+            title="Wettervorhersage",
+            file_name="weather.xhtml",
+            lang="de",
+        )
+        c.content = weather_content
+        if style_item:
+            c.add_item(style_item)
+        book.add_item(c)
+        chapters.append(c)
 
     for start in range(0, len(articles), articles_per_page):
         batch = articles[start : start + articles_per_page]
