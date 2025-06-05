@@ -4,3 +4,5 @@ pydantic
 requests
 langchain-google-genai
 ebooklib
+google-api-python-client
+google-auth
