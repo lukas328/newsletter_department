@@ -12,6 +12,7 @@ from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
 from src.utils.epub_utils import generate_epub
+from src.agents.data_fetchers.todoist_fetcher import TodoistFetcher
 from src.agents.distributors.gdrive_uploader import GDriveUploader
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,13 @@ class NewsletterOrchestrator:
                 f"Fehler bei der Initialisierung des ArticleWriterAgent: {e}", exc_info=True
             )
             self.article_writer = None
+
+        try:
+            self.todo_fetcher = TodoistFetcher()
+            logger.info("TodoistFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des TodoistFetchers: %s", e, exc_info=True)
+            self.todo_fetcher = None
 
         # Wie viele Artikel sollen voll ausgeschrieben werden?
         top_n_str = get_env_variable("NEWSLETTER_TOP_ARTICLE_COUNT", "3")
@@ -200,7 +208,14 @@ class NewsletterOrchestrator:
             logger.debug(f"  Verarbeiteter Artikel {i+1}: '{article.title}' - Zusammenfassung (erste 50 Zeichen): '{article.summary[:50]}...' - Kategorie: {article.category}")
         
         # --- Schritt 3: Daten evaluieren (Platzhalter) ---
-        final_items_for_newsletter = processed_articles 
+        final_items_for_newsletter = processed_articles
+        todos = []
+        if self.todo_fetcher:
+            try:
+                todos = self.todo_fetcher.fetch_data()
+                logger.info(f"{len(todos)} Todos von Todoist abgerufen.")
+            except Exception as e:
+                logger.error("Fehler beim Abrufen der Todos: %s", e, exc_info=True)
 
         # --- Schritt 4: Newsletter komponieren (Platzhalter) ---
         output_format = get_env_variable("NEWSLETTER_OUTPUT_FORMAT", "txt").lower()
@@ -215,6 +230,7 @@ class NewsletterOrchestrator:
                     newsletter_output_path,
                     articles_per_page=articles_per_page,
                     use_a4_css=use_a4_css,
+                    todos=todos,
                 )
                 logger.info(f"EPUB erstellt unter: {newsletter_output_path}")
 
@@ -257,3 +273,4 @@ class NewsletterOrchestrator:
         pipeline_duration = datetime.now(timezone.utc) - start_time
         logger.info(f"Newsletter-Pipeline in {pipeline_duration} abgeschlossen (Orchestrator).")
         return newsletter_output_path
+
