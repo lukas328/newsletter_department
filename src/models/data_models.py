@@ -87,11 +87,15 @@ class Birthday(BaseModel):
 class WeatherInfo(BaseModel):
     location: str
     temperature_celsius: float
-    condition: str 
+    condition: str
     humidity_percent: Optional[float] = Field(default=None)
     wind_speed_kmh: Optional[float] = Field(default=None)
     icon_url: Optional[HttpUrl] = Field(default=None) 
-    forecast_snippet: Optional[str] = Field(default=None) 
+    forecast_snippet: Optional[str] = Field(default=None)
+
+class Quote(BaseModel):
+    text: str
+    author: Optional[str] = Field(default=None)
 
 class NewsletterSection(BaseModel):
     title: str 
