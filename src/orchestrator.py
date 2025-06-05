@@ -208,7 +208,14 @@ class NewsletterOrchestrator:
         if output_format == "epub":
             newsletter_output_path = "tmp/newsletter.epub"
             try:
-                generate_epub(final_items_for_newsletter, newsletter_output_path)
+                articles_per_page = int(get_env_variable("EPUB_ARTICLES_PER_PAGE", "1"))
+                use_a4_css = get_env_variable("EPUB_USE_A4_CSS", "false").lower() == "true"
+                generate_epub(
+                    final_items_for_newsletter,
+                    newsletter_output_path,
+                    articles_per_page=articles_per_page,
+                    use_a4_css=use_a4_css,
+                )
                 logger.info(f"EPUB erstellt unter: {newsletter_output_path}")
 
                 creds = get_env_variable("GOOGLE_DRIVE_CREDENTIALS_JSON")

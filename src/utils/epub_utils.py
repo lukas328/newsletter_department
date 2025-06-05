@@ -3,14 +3,70 @@ from typing import List
 from src.models.data_models import ProcessedArticle
 
 
-def generate_epub(articles: List[ProcessedArticle], output_path: str) -> str:
-    """Generiert eine einfache EPUB-Datei aus verarbeiteten Artikeln."""
+def _build_a4_style() -> str:
+    """Return a simple CSS style for A4 sized pages."""
+    return (
+        "@page { size: A4; margin: 2cm; }"
+        "body { font-family: serif; }"
+        "h1 { font-size: 1.4em; margin-bottom: 0.2em; }"
+        "p { margin-top: 0; margin-bottom: 0.5em; }"
+    )
+
+
+def generate_epub(
+    articles: List[ProcessedArticle],
+    output_path: str,
+    articles_per_page: int = 1,
+    use_a4_css: bool = False,
+) -> str:
+    """Generiert eine EPUB-Datei aus Artikeln.
+
+    Args:
+        articles: Die zu verarbeitenden Artikel.
+        output_path: Zielpfad der EPUB-Datei.
+        articles_per_page: Wie viele Artikel pro EPUB-Seite zusammengefasst werden.
+        use_a4_css: Wenn True, wird ein einfaches A4-Stylesheet eingebunden.
+    """
     book = epub.EpubBook()
     book.set_identifier("newsletter")
     book.set_title("Newsletter")
     book.set_language("de")
 
     chapters = []
+
+    style_item = None
+    if use_a4_css:
+        style_item = epub.EpubItem(
+            uid="style_a4",
+            file_name="style/a4.css",
+            media_type="text/css",
+            content=_build_a4_style(),
+        )
+        book.add_item(style_item)
+
+    for start in range(0, len(articles), articles_per_page):
+        batch = articles[start : start + articles_per_page]
+        idx = start // articles_per_page + 1
+        title = batch[0].title or f"Artikel {idx}"
+        c = epub.EpubHtml(
+            title=title,
+            file_name=f"chap_{idx}.xhtml",
+            lang="de",
+        )
+        parts = []
+        for art in batch:
+            summary = art.summary.replace("\n", "<br/>") if art.summary else ""
+            parts.append(f"<h1>{art.title}</h1><p>{summary}</p>")
+        content = "".join(parts)
+        if use_a4_css and style_item:
+            c.content = (
+                f"<html><head><link rel='stylesheet' href='../style/a4.css' /></head><body>{content}</body></html>"
+            )
+        else:
+            c.content = content
+        if style_item:
+            c.add_item(style_item)
+
     for idx, article in enumerate(articles, start=1):
         c = epub.EpubHtml(
             title=article.title or f"Artikel {idx}",
@@ -24,6 +80,7 @@ def generate_epub(articles: List[ProcessedArticle], output_path: str) -> str:
             article_html = f"<div>{cleaned_text}</div>"
         content = f"<h1>{article.title}</h1><p>{summary}</p>{article_html}"
         c.content = content
+
         book.add_item(c)
         chapters.append(c)
 
