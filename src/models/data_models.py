@@ -56,7 +56,8 @@ class ProcessedArticle(BaseModel):
     url: Optional[HttpUrl] = Field(default=None)
     summary: str
     category: Optional[str] = Field(default="Unkategorisiert")
-    relevance_score: Optional[float] = Field(default=0.0, ge=0.0, le=1.0) 
+    # Bewertung der Wichtigkeit des Artikels im Kontext (1 bis 10). 0 = noch nicht bewertet
+    relevance_score: Optional[float] = Field(default=0.0, ge=0.0, le=10.0)
     source_name: Optional[str] = Field(default=None)
     published_at: Optional[datetime] = Field(default=None)
     llm_processing_details: Dict[str, Any] = Field(default_factory=dict)

@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Dieses Modell wird vom JsonOutputParser verwendet, um die LLM-Antwort zu validieren und zu parsen.
 class CategorizationResponseSchema(LangchainBaseModel):
     category: str = LangchainField(description="Die am besten passende Kategorie für den Artikel aus der vorgegebenen Liste.")
+    importance: int = LangchainField(description="Wichtigkeit des Artikels für das Thema auf einer Skala von 1 bis 10.")
     # Optional: confidence und reasoning können für detaillierteres Feedback hinzugefügt werden.
     # confidence: Optional[float] = LangchainField(description="Konfidenzwert der Kategorisierung (0.0 bis 1.0).", default=None)
     # reasoning: Optional[str] = LangchainField(description="Kurze Begründung für die gewählte Kategorie.", default=None)
@@ -51,6 +52,8 @@ Vorgegebene Kategorien: [{available_categories}]
 Wähle nur eine einzige, die absolut relevanteste Kategorie aus der Liste.
 Wenn keine Kategorie exakt passt, wähle die allgemeinste passende Kategorie aus der Liste oder, falls vorhanden, eine Kategorie wie 'Sonstiges' oder 'Der Rund um Blick'.
 Gib KEINEN zusätzlichen Text oder Erklärungen außerhalb des JSON-Objekts zurück.
+
+Bewerte außerdem, wie wichtig dieser Artikel im Kontext des Themas ist. Verwende eine Skala von 1 (sehr unwichtig) bis 10 (sehr wichtig) und gib die Zahl im Feld "importance" zurück.
 
 ARTIKELTITEL: {title}
 ARTIKELZUSAMMENFASSUNG: {summary}
@@ -104,6 +107,23 @@ JSON-ANTWORT (nur das JSON-Objekt):
             })
             
             category = response_data.get("category", "Unkategorisiert")
+            importance_val = response_data.get("importance", 0)
+
+            try:
+                importance_score = float(importance_val)
+            except (TypeError, ValueError):
+                importance_score = 0.0
+
+            if importance_score < 0 or importance_score > 10:
+                logger.warning(
+                    f"Erhaltene Wichtigkeit '{importance_score}' außerhalb des erwarteten Bereichs 1-10 für Artikel '{article.title}'."
+                )
+                importance_score = max(0.0, min(importance_score, 10.0))
+
+            article.relevance_score = importance_score
+            if article.llm_processing_details is None:
+                article.llm_processing_details = {}
+            article.llm_processing_details["importance"] = importance_score
 
             # Zusätzliche Validierung: Stelle sicher, dass die zurückgegebene Kategorie eine der erlaubten ist.
             # Manchmal halluzinieren LLMs Kategorien, die nicht in der Liste standen.

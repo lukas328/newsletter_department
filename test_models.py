@@ -18,7 +18,6 @@ try:
     raw3 = RawArticle(title="String Datum ohne TZ", published_at="2025-06-04 12:30:00")
     print(f"Raw Article 3: {raw3.title}, Published: {raw3.published_at} (TZ: {raw3.published_at.tzinfo})")
 
-
     # Test ProcessedArticle
     proc1 = ProcessedArticle(title="Verarbeiteter Artikel", summary="Dies ist eine tolle Zusammenfassung.", category="IT & AI")
     print(f"Processed Article: {proc1.title}, Category: {proc1.category}, Score: {proc1.relevance_score}")
