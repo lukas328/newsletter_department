@@ -89,11 +89,27 @@ class Birthday(BaseModel):
 class WeatherInfo(BaseModel):
     location: str
     temperature_celsius: float
-    condition: str 
+    condition: str
     humidity_percent: Optional[float] = Field(default=None)
     wind_speed_kmh: Optional[float] = Field(default=None)
-    icon_url: Optional[HttpUrl] = Field(default=None) 
-    forecast_snippet: Optional[str] = Field(default=None) 
+    icon_url: Optional[HttpUrl] = Field(default=None)
+    forecast_snippet: Optional[str] = Field(default=None)
+
+class Artwork(BaseModel):
+    """Ein Kunstwerk, das aus Europeana abgefragt wurde."""
+
+    title: str
+    image_url: Optional[HttpUrl] = Field(default=None)
+    artist: Optional[str] = Field(default=None)
+    location: Optional[str] = Field(default=None)
+    epoch: Optional[str] = Field(default=None)
+    description: Optional[str] = Field(default=None)
+    europeana_id: Optional[str] = Field(default=None)
+
+class Quote(BaseModel):
+    text: str
+    author: Optional[str] = Field(default=None)
+
 
 class NewsletterSection(BaseModel):
     title: str 
@@ -105,3 +121,11 @@ class NewsletterData(BaseModel):
     sections: List[NewsletterSection]
 
     _ensure_generation_date_tz_aware = field_validator('generation_date', mode='before')(ensure_timezone_aware)
+
+class TodoItem(BaseModel):
+    """Simple representation of a Todoist task."""
+
+    id: Optional[int] = Field(default=None)
+    content: str
+
+

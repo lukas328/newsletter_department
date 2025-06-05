@@ -6,14 +6,20 @@ from datetime import datetime, timezone, date
 from typing import List, Optional, Any, Dict 
 
 from src.utils.config_loader import load_env, get_env_variable
-from src.models.data_models import RawArticle, ProcessedArticle
+from src.models.data_models import RawArticle, ProcessedArticle, Event,WeatherInfo
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
+from src.agents.data_fetchers.google_calendar_fetcher import GoogleCalendarFetcher
+from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetcher
+from src.agents.data_fetchers.zenquotes_fetcher import ZenQuotesFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
 from src.utils.epub_utils import generate_epub
 from src.utils.birthday_utils import get_upcoming_birthdays
 from src.agents.data_fetchers.birthday_sheet_fetcher import BirthdaySheetFetcher
+
+from src.agents.data_fetchers.todoist_fetcher import TodoistFetcher
+
 from src.agents.distributors.gdrive_uploader import GDriveUploader
 
 logger = logging.getLogger(__name__)
@@ -30,9 +36,36 @@ class NewsletterOrchestrator:
 
         self.news_api_fetchers: List[NewsAPIFetcher] = [
             NewsAPIFetcher(query="Künstliche Intelligenz OR Technologie", language="de", endpoint="everything", days_ago=1, page_size=3, source_name_override="KI & Tech News (DE)"), # page_size reduziert für Tests
-            NewsAPIFetcher(country="ch", category="technology", endpoint="top-headlines", page_size=2, source_name_override="Schweiz Tech-Schlagzeilen"), 
+            NewsAPIFetcher(country="ch", category="technology", endpoint="top-headlines", page_size=2, source_name_override="Schweiz Tech-Schlagzeilen"),
             NewsAPIFetcher(query="global innovation OR science breakthrough", language="en", endpoint="everything", days_ago=1, page_size=3, source_name_override="Internationale Innovation (EN)")
         ]
+
+
+        # Optional: Google Calendar Fetcher für Termine
+        calendar_creds = get_env_variable("GOOGLE_CALENDAR_CREDENTIALS_JSON")
+        if calendar_creds:
+            cal_id = get_env_variable("GOOGLE_CALENDAR_ID", "primary")
+            try:
+                self.calendar_fetcher = GoogleCalendarFetcher(calendar_creds, cal_id)
+                logger.info("GoogleCalendarFetcher erfolgreich initialisiert.")
+            except Exception as e:
+                logger.error(f"Fehler bei der Initialisierung des GoogleCalendarFetcher: {e}")
+                self.calendar_fetcher = None
+        else:
+            self.calendar_fetcher = None
+
+
+        # Weather fetcher for Zurich
+        try:
+            self.weather_fetcher = OpenWeatherMapFetcher(city="Zurich")
+            logger.info("OpenWeatherMapFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error(f"Fehler bei der Initialisierung des OpenWeatherMapFetcher: {e}", exc_info=True)
+            self.weather_fetcher = None
+
+        self.quote_fetcher = ZenQuotesFetcher()
+
+
         
         try:
             self.summarizer = SummarizerAgent() 
@@ -80,6 +113,15 @@ class NewsletterOrchestrator:
                     f"Fehler bei der Initialisierung des BirthdaySheetFetcher: {e}",
                     exc_info=True,
                 )
+                
+
+        try:
+            self.todo_fetcher = TodoistFetcher()
+            logger.info("TodoistFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des TodoistFetchers: %s", e, exc_info=True)
+            self.todo_fetcher = None
+
 
         # Wie viele Artikel sollen voll ausgeschrieben werden?
         top_n_str = get_env_variable("NEWSLETTER_TOP_ARTICLE_COUNT", "3")
@@ -111,6 +153,17 @@ class NewsletterOrchestrator:
         logger.info(f"Insgesamt {len(all_fetched_articles)} Rohartikel von allen Quellen gesammelt.")
         return all_fetched_articles
 
+    def _fetch_weather(self) -> List[WeatherInfo]:
+        """Fetch weather forecast information."""
+        if not self.weather_fetcher:
+            logger.warning("Weather fetcher not available. Skipping weather data fetch.")
+            return []
+        try:
+            return self.weather_fetcher.fetch_data()
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen der Wetterdaten: {e}", exc_info=True)
+            return []
+
     def _filter_blacklisted_sources(self, articles: List[RawArticle]) -> List[RawArticle]:
         """Entfernt Artikel von Quellen, die in der Blacklist stehen."""
         if not self.source_blacklist:
@@ -129,6 +182,18 @@ class NewsletterOrchestrator:
         if removed:
             logger.info(f"{removed} Artikel aufgrund der Quellen-Blacklist entfernt.")
         return filtered
+
+    def _fetch_calendar_events(self) -> List[Event]:
+        """Ruft die nächsten Termine aus Google Calendar ab, falls konfiguriert."""
+        if not self.calendar_fetcher:
+            return []
+        try:
+            events = self.calendar_fetcher.fetch_data()
+            logger.info(f"{len(events)} Termine aus Google Calendar abgerufen.")
+            return events
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen der Calendar-Daten: {e}")
+            return []
 
 
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
@@ -215,9 +280,16 @@ class NewsletterOrchestrator:
         logger.info(f"{len(processed_articles)} Artikel nach LLM-Verarbeitung vorhanden.")
         for i, article in enumerate(processed_articles[:1]): # Ersten verarbeiteten Artikel loggen
             logger.debug(f"  Verarbeiteter Artikel {i+1}: '{article.title}' - Zusammenfassung (erste 50 Zeichen): '{article.summary[:50]}...' - Kategorie: {article.category}")
-        
+
+        # --- Schritt 3: Zusätzliche Daten abrufen ---
+        calendar_events = self._fetch_calendar_events()
+
+        # --- Schritt 4: Daten evaluieren (Platzhalter) ---
+
+
         # --- Schritt 3: Daten evaluieren (Platzhalter) ---
         final_items_for_newsletter = processed_articles
+
         extra_chapters = []
         if self.birthday_fetcher:
             try:
@@ -238,7 +310,29 @@ class NewsletterOrchestrator:
             except Exception as e_birth:
                 logger.error(f"Fehler beim Abrufen der Geburtstage: {e_birth}", exc_info=True)
 
-        # --- Schritt 4: Newsletter komponieren (Platzhalter) ---
+
+        todos = []
+        if self.todo_fetcher:
+            try:
+                todos = self.todo_fetcher.fetch_data()
+                logger.info(f"{len(todos)} Todos von Todoist abgerufen.")
+            except Exception as e:
+                logger.error("Fehler beim Abrufen der Todos: %s", e, exc_info=True)
+
+        weather_infos = self._fetch_weather()
+
+
+        quote: Optional[Quote] = None
+        try:
+            quotes = self.quote_fetcher.fetch_data()
+            if quotes:
+                quote = quotes[0]
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen des Zitats: {e}", exc_info=True)
+
+
+
+        # --- Schritt 5: Newsletter komponieren (Platzhalter) ---
         output_format = get_env_variable("NEWSLETTER_OUTPUT_FORMAT", "txt").lower()
 
         if output_format == "epub":
@@ -247,11 +341,22 @@ class NewsletterOrchestrator:
                 articles_per_page = int(get_env_variable("EPUB_ARTICLES_PER_PAGE", "1"))
                 use_a4_css = get_env_variable("EPUB_USE_A4_CSS", "false").lower() == "true"
                 generate_epub(
-                    final_items_for_newsletter,
+                    processed_articles,
                     newsletter_output_path,
                     articles_per_page=articles_per_page,
                     use_a4_css=use_a4_css,
+
                     extra_chapters=extra_chapters,
+
+                    events=calendar_events,
+                    todos=todos,
+                    weather_infos=weather_infos,
+                    quote_of_the_day=quote.text if quote else None,
+                    quote_author=quote.author if quote else None,
+
+
+
+
                 )
                 logger.info(f"EPUB erstellt unter: {newsletter_output_path}")
 
@@ -272,17 +377,32 @@ class NewsletterOrchestrator:
                 with open(newsletter_output_path, "w", encoding="utf-8") as f:
                     f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
                     f.write("===============================================================\n\n")
+
+                    if processed_articles:
+                        for item in processed_articles:
+
+                    if quote:
+                        f.write(f"Zitat des Tages: {quote.text}")
+                        if quote.author:
+                            f.write(f" - {quote.author}")
+                        f.write("\n\n")
                     if final_items_for_newsletter:
                         for item in final_items_for_newsletter:
+
                             f.write(f"Titel: {item.title if item.title else 'Kein Titel'}\n")
                             f.write(f"Quelle: {item.source_name if item.source_name else 'Unbekannt'}\n")
                             f.write(f"Kategorie: {item.category}\n")
                             f.write(f"URL: {str(item.url) if item.url else 'Keine URL'}\n")
                             f.write(f"Datum: {item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Kein Datum'}\n")
                             f.write(f"ZUSAMMENFASSUNG: {item.summary}\n")
-                            f.write("---------------------------------------------------------------\n")
+                            f.write("------------------------------------------------------------\n")
                     else:
                         f.write("Keine Artikel für diesen Newsletter gefunden.\n")
+                    if calendar_events:
+                        f.write("\nTermine:\n")
+                        for evt in calendar_events:
+                            start = evt.start_time.strftime('%Y-%m-%d %H:%M') if evt.start_time else ''
+                            f.write(f"- {evt.summary} {start}\n")
                 logger.info(f"Platzhalter-Newsletter (mit Kategorien) erstellt unter: {newsletter_output_path}")
             except Exception as e:
                 logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)
@@ -294,3 +414,4 @@ class NewsletterOrchestrator:
         pipeline_duration = datetime.now(timezone.utc) - start_time
         logger.info(f"Newsletter-Pipeline in {pipeline_duration} abgeschlossen (Orchestrator).")
         return newsletter_output_path
+
