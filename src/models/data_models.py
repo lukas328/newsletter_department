@@ -92,12 +92,24 @@ class WeatherInfo(BaseModel):
     condition: str
     humidity_percent: Optional[float] = Field(default=None)
     wind_speed_kmh: Optional[float] = Field(default=None)
-    icon_url: Optional[HttpUrl] = Field(default=None) 
+    icon_url: Optional[HttpUrl] = Field(default=None)
     forecast_snippet: Optional[str] = Field(default=None)
+
+class Artwork(BaseModel):
+    """Ein Kunstwerk, das aus Europeana abgefragt wurde."""
+
+    title: str
+    image_url: Optional[HttpUrl] = Field(default=None)
+    artist: Optional[str] = Field(default=None)
+    location: Optional[str] = Field(default=None)
+    epoch: Optional[str] = Field(default=None)
+    description: Optional[str] = Field(default=None)
+    europeana_id: Optional[str] = Field(default=None)
 
 class Quote(BaseModel):
     text: str
     author: Optional[str] = Field(default=None)
+
 
 class NewsletterSection(BaseModel):
     title: str 
