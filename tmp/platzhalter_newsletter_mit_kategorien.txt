@@ -1,45 +1,45 @@
-Platzhalter-Newsletter - Erstellt am: 2025-06-05 12:20:17 UTC
+Platzhalter-Newsletter - Erstellt am: 2025-06-05 13:02:22 UTC
 ==============================================================
 
+Titel: Was kann man ChatGPT fragen? Beispiele & Vorschläge
+Quelle: Giga
+Kategorie: Fehler bei Kategorisierung (Allgemein)
+URL: https://www.giga.de/tech/was-kann-man-chatgpt-fragen-beispiele-vorschlaege--01J5QTEKCXQAMXRFGEK0ZVN5ZJ
+Datum: 2025-06-04 12:38
+ZUSAMMENFASSUNG: ChatGPT ist ein vielseitiger Chatbot von OpenAI, der für diverse Aufgaben genutzt werden kann. Der Artikel liefert Beispiele und Vorschläge, um das Potenzial der KI optimal auszuschöpfen.
+--------------------------------------------------------------
+Titel: Mehr Funktionen für ChatGPT ohne Abo: Doch es gibt einen Haken
+Quelle: netzwelt
+Kategorie: Fehler bei Kategorisierung (Allgemein)
+URL: https://www.netzwelt.de/news/242684-mehr-funktionen-chatgpt-ohne-abo-gibt-haken.html
+Datum: 2025-06-04 12:30
+ZUSAMMENFASSUNG: ChatGPT bietet jetzt mehr Funktionen auch ohne Abonnement. Allerdings ist die Nutzung eingeschränkt und möglicherweise langsamer. Ein kostenpflichtiges Abonnement bleibt für uneingeschränkten Zugriff und schnellere Antwortzeiten weiterhin erforderlich.
+--------------------------------------------------------------
 Titel: Uni Graz nutzt KI für kartographische Zeitreise
 Quelle: Steiermark.orf.at
-Kategorie: IT & AI
+Kategorie: Fehler bei Kategorisierung (Allgemein)
 URL: https://steiermark.orf.at/stories/3308210/
 Datum: 2025-06-04 12:14
-ZUSAMMENFASSUNG: Die Uni Graz setzt KI ein, um historische Karten zu analysieren und Veränderungen in der Landschaft über lange Zeiträume zu visualisieren. Diese "kartographische Zeitreise" ermöglicht es, verborgene archäologische Schätze und historische Landnutzungen unter der heutigen Oberfläche zu entdecken. Die Technologie birgt Potenzial für Archäologie, Denkmalpflege und Raumplanung.
+ZUSAMMENFASSUNG: Die Uni Graz setzt KI ein, um historische Karten zu analysieren und verborgene archäologische Informationen aufzudecken. Diese "kartographische Zeitreise" ermöglicht es, die Landnutzung im Laufe der Zeit zu rekonstruieren und potenzielle Fundorte zu identifizieren. Die Technologie birgt das Potenzial, archäologische Forschung effizienter zu gestalten und historische Zusammenhänge besser zu verstehen.
 --------------------------------------------------------------
-Titel: Technologie in der Modebranche: So macht Saint Sass Strumpfhosen zum digitalen Erfolgsmodell
-Quelle: N-tv.de
-Kategorie: Wirtschaft
-URL: https://www.n-tv.de/wirtschaft/So-macht-Saint-Sass-Strumpfhosen-zum-digitalen-Erfolgsmodell-article25810715.html
-Datum: 2025-06-04 12:00
-ZUSAMMENFASSUNG: Saint Sass nutzt KI, Social-Media-Werbung und datenbasierte Produktentwicklung, um Strumpfhosen weltweit erfolgreich zu verkaufen. Der amerikanische Markt ist dabei zum wichtigsten Absatzmarkt geworden. Technologie ist der Schlüssel zum digitalen Erfolgsmodell des Unternehmens.
+Titel: Wingers: Yamal, Salah, Pulisic, more
+Quelle: ESPN
+Kategorie: Fehler bei Kategorisierung (Allgemein)
+URL: https://www.espn.com/soccer/story/_/id/45179056/2025-fc-100-salah-best-wingers-mens-soccer
+Datum: 2025-06-04 12:51
+ZUSAMMENFASSUNG: Der Artikel beleuchtet die Rolle des Flügelspielers im Fußball, die durch Dribblings, Geschwindigkeit und Torschussqualitäten geprägt ist. Er untersucht Spieler wie Yamal, Salah und Pulisic, die diese Fähigkeiten verkörpern. Der Fokus liegt auf der Vielseitigkeit und dem Einfluss von Flügelspielern auf das Spiel.
 --------------------------------------------------------------
-Titel: Galaxy Z Fold 7: Samsung teasert dünnes "Ultra"-Foldable an
-Quelle: heise online
-Kategorie: IT & AI
-URL: https://www.heise.de/news/Galaxy-Z-Fold-7-Samsung-teasert-duennes-Ultra-Foldable-an-10425327.html
-Datum: 2025-06-04 11:57
-ZUSAMMENFASSUNG: Samsung teasert ein neues, besonders dünnes "Ultra"-Foldable der nächsten Generation an. Unter dem Titel "Meet the Next Chapter of Ultra" deutet eine Animation die baldige Vorstellung des Geräts an. Details zu Spezifikationen oder Erscheinungsdatum sind noch nicht bekannt.
+Titel: Center forwards: Mbappe, Haaland, more
+Quelle: ESPN
+Kategorie: Fehler bei Kategorisierung (Allgemein)
+URL: https://www.espn.com/soccer/story/_/id/45180244/2025-fc-100-haaland-best-center-forwards-mens-soccer
+Datum: 2025-06-04 12:51
+ZUSAMMENFASSUNG: Mittelstürmer vereinen Abschlussstärke, Spielmacherqualitäten und Raumschaffung. Sie sind vielseitig genug für freie Rollen und agil unter Druck. Der Artikel beleuchtet Top-Spieler wie Mbappe und Haaland.
 --------------------------------------------------------------
 Titel: Jurassic World Rebirth: Filming In The Wild BTS Featurette
 Quelle: Bleeding Cool News
-Kategorie: Kultur und Inspiration
+Kategorie: Fehler bei Kategorisierung (Allgemein)
 URL: https://bleedingcool.com/movies/jurassic-world-rebirth-filming-in-the-wild-bts-featurette/
 Datum: 2025-06-04 12:17
-ZUSAMMENFASSUNG: Universal hat ein Behind-the-Scenes-Featurette zu Jurassic World Rebirth veröffentlicht. Dieses beleuchtet die Bedeutung von Dreharbeiten in der Natur für den Film.
---------------------------------------------------------------
-Titel: Comscore and ShowSeeker Partner to Bring Person-Level Data to Pilot® Platform, Advancing Local TV Campaign Precision
-Quelle: GlobeNewswire
-Kategorie: Wirtschaft
-URL: https://www.globenewswire.com/news-release/2025/06/04/3093538/0/en/Comscore-and-ShowSeeker-Partner-to-Bring-Person-Level-Data-to-Pilot-Platform-Advancing-Local-TV-Campaign-Precision.html
-Datum: 2025-06-04 12:15
-ZUSAMMENFASSUNG: Comscore und ShowSeeker kooperieren, um Personendaten in die Pilot®-Plattform zu integrieren. Dies verbessert die Präzision lokaler TV-Kampagnen durch detailliertere Zielgruppeninformationen. Die Partnerschaft ermöglicht eine effektivere Ausrichtung von Werbung auf Basis von individuellem Konsumentenverhalten.
---------------------------------------------------------------
-Titel: US market futures today: Dow, S&P 500, Nasdaq futures steady as Trump’s tariff shock tests market nerves
-Quelle: The Times of India
-Kategorie: Wirtschaft
-URL: https://economictimes.indiatimes.com/news/international/us/us-market-futures-today-dow-sp-500-nasdaq-futures-steady-as-trumps-tariff-shock-tests-market-nerves/articleshow/121622906.cms
-Datum: 2025-06-04 12:01
-ZUSAMMENFASSUNG: US-Aktienfutures zeigten sich stabil, nachdem Präsident Trump überraschend die Zölle auf Stahl und Aluminium verdoppelte. Diese Maßnahme testet die Nerven der Märkte und führt zu einer vorsichtigen Haltung an der Wall Street.
+ZUSAMMENFASSUNG: Zusammenfassung fehlgeschlagen (LLM-Fehler).
 --------------------------------------------------------------
