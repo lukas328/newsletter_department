@@ -6,9 +6,13 @@ from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict 
 
 from src.utils.config_loader import load_env, get_env_variable
+
 from src.models.data_models import RawArticle, ProcessedArticle, WeatherInfo
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
 from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetcher
+
+from src.agents.data_fetchers.zenquotes_fetcher import ZenQuotesFetcher
+
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
@@ -33,6 +37,7 @@ class NewsletterOrchestrator:
             NewsAPIFetcher(query="global innovation OR science breakthrough", language="en", endpoint="everything", days_ago=1, page_size=3, source_name_override="Internationale Innovation (EN)")
         ]
 
+
         # Weather fetcher for Zurich
         try:
             self.weather_fetcher = OpenWeatherMapFetcher(city="Zurich")
@@ -40,6 +45,9 @@ class NewsletterOrchestrator:
         except Exception as e:
             logger.error(f"Fehler bei der Initialisierung des OpenWeatherMapFetcher: {e}", exc_info=True)
             self.weather_fetcher = None
+
+        self.quote_fetcher = ZenQuotesFetcher()
+
         
         try:
             self.summarizer = SummarizerAgent() 
@@ -221,7 +229,17 @@ class NewsletterOrchestrator:
 
         # --- Schritt 3: Daten evaluieren (Platzhalter) ---
         final_items_for_newsletter = processed_articles
+
         weather_infos = self._fetch_weather()
+
+        quote: Optional[Quote] = None
+        try:
+            quotes = self.quote_fetcher.fetch_data()
+            if quotes:
+                quote = quotes[0]
+        except Exception as e:
+            logger.error(f"Fehler beim Abrufen des Zitats: {e}", exc_info=True)
+
 
         # --- Schritt 4: Newsletter komponieren (Platzhalter) ---
         output_format = get_env_variable("NEWSLETTER_OUTPUT_FORMAT", "txt").lower()
@@ -236,7 +254,11 @@ class NewsletterOrchestrator:
                     newsletter_output_path,
                     articles_per_page=articles_per_page,
                     use_a4_css=use_a4_css,
+
                     weather_infos=weather_infos,
+                    quote_of_the_day=quote.text if quote else None,
+                    quote_author=quote.author if quote else None,
+
                 )
                 logger.info(f"EPUB erstellt unter: {newsletter_output_path}")
 
@@ -257,6 +279,11 @@ class NewsletterOrchestrator:
                 with open(newsletter_output_path, "w", encoding="utf-8") as f:
                     f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
                     f.write("===============================================================\n\n")
+                    if quote:
+                        f.write(f"Zitat des Tages: {quote.text}")
+                        if quote.author:
+                            f.write(f" - {quote.author}")
+                        f.write("\n\n")
                     if final_items_for_newsletter:
                         for item in final_items_for_newsletter:
                             f.write(f"Titel: {item.title if item.title else 'Kein Titel'}\n")

@@ -134,7 +134,8 @@ class NewsAPIFetcher(BaseDataFetcher):
                         content_snippet=article_item.get("content"), # NewsAPI liefert oft nur einen Snippet hier
                         published_at=article_item.get("publishedAt"), # String wird von Pydantic geparsed
                         source_name=article_item.get("source", {}).get("name", self.source_name),
-                        source_id=article_item.get("source", {}).get("id")
+                        source_id=article_item.get("source", {}).get("id"),
+                        image_url=article_item.get("urlToImage")
                     )
                     fetched_articles.append(raw_article)
                 except Exception as e_article_parse: # Fängt Pydantic ValidationErrors oder andere Fehler ab

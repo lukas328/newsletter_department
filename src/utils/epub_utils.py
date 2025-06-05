@@ -18,7 +18,12 @@ def generate_epub(
     output_path: str,
     articles_per_page: int = 1,
     use_a4_css: bool = False,
+
     weather_infos: Optional[List[WeatherInfo]] = None,
+
+    quote_of_the_day: str | None = None,
+    quote_author: str | None = None,
+
 ) -> str:
     """Generiert eine EPUB-Datei aus Artikeln.
 
@@ -27,7 +32,11 @@ def generate_epub(
         output_path: Zielpfad der EPUB-Datei.
         articles_per_page: Wie viele Artikel pro EPUB-Seite zusammengefasst werden.
         use_a4_css: Wenn True, wird ein einfaches A4-Stylesheet eingebunden.
+
         weather_infos: Optionale Wettervorhersageeinträge, die als eigenes Kapitel eingefügt werden.
+        quote_of_the_day: Optionaler Motivationstext als Einleitungsseite.
+        quote_author: Autor des Zitats, falls vorhanden.
+
     """
     book = epub.EpubBook()
     book.set_identifier("newsletter")
@@ -46,6 +55,7 @@ def generate_epub(
         )
         book.add_item(style_item)
 
+
     if weather_infos:
         weather_html_parts = []
         for info in weather_infos:
@@ -62,6 +72,18 @@ def generate_epub(
             c.add_item(style_item)
         book.add_item(c)
         chapters.append(c)
+
+    if quote_of_the_day:
+        quote_chapter = epub.EpubHtml(title="Zitat des Tages", file_name="quote.xhtml", lang="de")
+        content = f"<h1>Zitat des Tages</h1><p>{quote_of_the_day}</p>"
+        if quote_author:
+            content += f"<p>- {quote_author}</p>"
+        quote_chapter.content = content
+        if style_item:
+            quote_chapter.add_item(style_item)
+        book.add_item(quote_chapter)
+        chapters.append(quote_chapter)
+
 
     for start in range(0, len(articles), articles_per_page):
         batch = articles[start : start + articles_per_page]
