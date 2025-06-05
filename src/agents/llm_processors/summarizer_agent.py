@@ -16,7 +16,7 @@ class SummarizerAgent(BaseLLMProcessor):
     """
     def __init__(self, 
                  model_name: Optional[str] = None, # Wird vom BaseLLMProcessor mit Default belegt
-                 temperature: float = 0.2): # Niedrigere Temperatur für faktenbasierte Zusammenfassungen
+                 temperature: float = 1): # Niedrigere Temperatur für faktenbasierte Zusammenfassungen
         super().__init__(model_name=model_name, temperature=temperature)
         
         # Definiere das Prompt-Template für die Zusammenfassung.

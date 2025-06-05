@@ -17,7 +17,7 @@ class BaseLLMProcessor(ABC):
     """
     def __init__(self, 
                  model_name: Optional[str] = None, 
-                 temperature: float = 0.3, # Standardtemperatur für ausgewogene Kreativität
+                 temperature: float = 1, # Standardtemperatur für ausgewogene Kreativität
                  llm_provider: str = "openai"):
         """
         Initialisiert den LLM-Prozessor.

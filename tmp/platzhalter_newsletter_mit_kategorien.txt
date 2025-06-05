@@ -1,45 +1,45 @@
-Platzhalter-Newsletter - Erstellt am: 2025-06-05 13:02:22 UTC
-==============================================================
+Platzhalter-Newsletter - Erstellt am: 2025-06-05 13:50:25 UTC
+===============================================================
 
-Titel: Was kann man ChatGPT fragen? Beispiele & Vorschläge
-Quelle: Giga
-Kategorie: Fehler bei Kategorisierung (Allgemein)
-URL: https://www.giga.de/tech/was-kann-man-chatgpt-fragen-beispiele-vorschlaege--01J5QTEKCXQAMXRFGEK0ZVN5ZJ
-Datum: 2025-06-04 12:38
-ZUSAMMENFASSUNG: ChatGPT ist ein vielseitiger Chatbot von OpenAI, der für diverse Aufgaben genutzt werden kann. Der Artikel liefert Beispiele und Vorschläge, um das Potenzial der KI optimal auszuschöpfen.
---------------------------------------------------------------
-Titel: Mehr Funktionen für ChatGPT ohne Abo: Doch es gibt einen Haken
-Quelle: netzwelt
-Kategorie: Fehler bei Kategorisierung (Allgemein)
-URL: https://www.netzwelt.de/news/242684-mehr-funktionen-chatgpt-ohne-abo-gibt-haken.html
-Datum: 2025-06-04 12:30
-ZUSAMMENFASSUNG: ChatGPT bietet jetzt mehr Funktionen auch ohne Abonnement. Allerdings ist die Nutzung eingeschränkt und möglicherweise langsamer. Ein kostenpflichtiges Abonnement bleibt für uneingeschränkten Zugriff und schnellere Antwortzeiten weiterhin erforderlich.
---------------------------------------------------------------
-Titel: Uni Graz nutzt KI für kartographische Zeitreise
-Quelle: Steiermark.orf.at
-Kategorie: Fehler bei Kategorisierung (Allgemein)
-URL: https://steiermark.orf.at/stories/3308210/
-Datum: 2025-06-04 12:14
-ZUSAMMENFASSUNG: Die Uni Graz setzt KI ein, um historische Karten zu analysieren und verborgene archäologische Informationen aufzudecken. Diese "kartographische Zeitreise" ermöglicht es, die Landnutzung im Laufe der Zeit zu rekonstruieren und potenzielle Fundorte zu identifizieren. Die Technologie birgt das Potenzial, archäologische Forschung effizienter zu gestalten und historische Zusammenhänge besser zu verstehen.
---------------------------------------------------------------
-Titel: Wingers: Yamal, Salah, Pulisic, more
-Quelle: ESPN
-Kategorie: Fehler bei Kategorisierung (Allgemein)
-URL: https://www.espn.com/soccer/story/_/id/45179056/2025-fc-100-salah-best-wingers-mens-soccer
-Datum: 2025-06-04 12:51
-ZUSAMMENFASSUNG: Der Artikel beleuchtet die Rolle des Flügelspielers im Fußball, die durch Dribblings, Geschwindigkeit und Torschussqualitäten geprägt ist. Er untersucht Spieler wie Yamal, Salah und Pulisic, die diese Fähigkeiten verkörpern. Der Fokus liegt auf der Vielseitigkeit und dem Einfluss von Flügelspielern auf das Spiel.
---------------------------------------------------------------
-Titel: Center forwards: Mbappe, Haaland, more
-Quelle: ESPN
-Kategorie: Fehler bei Kategorisierung (Allgemein)
-URL: https://www.espn.com/soccer/story/_/id/45180244/2025-fc-100-haaland-best-center-forwards-mens-soccer
-Datum: 2025-06-04 12:51
-ZUSAMMENFASSUNG: Mittelstürmer vereinen Abschlussstärke, Spielmacherqualitäten und Raumschaffung. Sie sind vielseitig genug für freie Rollen und agil unter Druck. Der Artikel beleuchtet Top-Spieler wie Mbappe und Haaland.
---------------------------------------------------------------
-Titel: Jurassic World Rebirth: Filming In The Wild BTS Featurette
-Quelle: Bleeding Cool News
-Kategorie: Fehler bei Kategorisierung (Allgemein)
-URL: https://bleedingcool.com/movies/jurassic-world-rebirth-filming-in-the-wild-bts-featurette/
-Datum: 2025-06-04 12:17
-ZUSAMMENFASSUNG: Zusammenfassung fehlgeschlagen (LLM-Fehler).
---------------------------------------------------------------
+Titel: ORF-NÖ-Redakteur Tobias Mayr ausgezeichnet
+Quelle: Noe.orf.at
+Kategorie: Wirtschaft
+URL: https://noe.orf.at/stories/3308281/
+Datum: 2025-06-04 13:24
+ZUSAMMENFASSUNG: ORF-Niederösterreich-Redakteur Tobias Mayr wurde für seine herausragende Reportage „Smartphones, E-Autos und Bitcoins: Wie decken wir den Strombedarf der Zukunft?“ ausgezeichnet. Seine Beiträge analysieren den wachsenden Energiebedarf moderner Technologien und präsentieren konkrete Lösungsansätze für eine nachhaltige Stromversorgung.
+---------------------------------------------------------------
+Titel: Pilgerfahrt mit Drohne und KI: Wie Saudis mit modernster Technologie Massenansturm bewältigen [premium]
+Quelle: Diepresse.com
+Kategorie: IT & AI
+URL: https://www.diepresse.com/19761459/pilgerfahrt-mit-drohne-und-ki-wie-saudis-mit-modernster-technologie-massenansturm-bewaeltigen
+Datum: 2025-06-04 13:18
+ZUSAMMENFASSUNG: Saudi-Arabien nutzt für die Hadsch Drohnen, KI-Überwachungssysteme und einen „Fatwa-Roboter“, um den Ansturm von Millionen Pilgern zu steuern und religiöse Fragen automatisiert zu beantworten. Smart-Apps, VR-Trainingsmodule und Gesundheits-Tracker optimieren Routenführung, Sicherheitskontrollen und medizinische Versorgung. Die Modernisierung verspricht höhere Sicherheit und kürzere Wartezeiten, wirft aber Fragen zu Datenschutz und religiöser Autorität im digitalen Zeitalter auf.
+---------------------------------------------------------------
+Titel: Mehr als eine Million Gläubige: Muslimische Pilgerfahrt Hadsch in Mekka begonnen
+Quelle: Der Tagesspiegel
+Kategorie: Kultur und Inspiration
+URL: https://www.tagesspiegel.de/internationales/mehr-als-eine-million-glaubige-muslimische-pilgerfahrt-hadsch-in-mekka-begonnen-13802632.html
+Datum: 2025-06-04 13:05
+ZUSAMMENFASSUNG: Mehr als eine Million Gläubige haben in der Zeltstadt von Mina bei Mekka die Pilgerfahrt Hadsch begonnen. Die saudischen Behörden setzten umfangreiche Sicherheits- und Logistikmaßnahmen ein, um reibungslose Abläufe sicherzustellen. Die Versammlung unterstreicht die zentrale Bedeutung des Hadsch als eine der größten religiösen Zusammenkünfte weltweit.
+---------------------------------------------------------------
+Titel: Taptap Digital Launches Total Retail to Connect Brand Advertising to Retail Media
+Quelle: ExchangeWire
+Kategorie: Wirtschaft
+URL: https://www.exchangewire.com/blog/2025/06/04/taptap-digital-launches-total-retail-to-connect-brand-advertising-to-retail-media/
+Datum: 2025-06-04 13:37
+ZUSAMMENFASSUNG: Taptap Digital hat Total Retail gestartet, eine Lösung, die Markenwerbung mit Retail Media verknüpft und FMCG-Werbetreibenden über standortbasierte Zielgruppenansprache und einheitliche Erfolgskennzahlen hilft, Handelsumsätze zu steigern. Die Plattform integriert Kampagnenplanung, Aktivierung und Erfolgsmessung über digitale Markenkampagnen und Handelsmedien und liefert Einblicke in Ladenbesuche, In-Store-Verkäufe und Markenwirkung. Durch dynamisches Targeting, Cross-Channel-Attribution und transparente Metriken optimiert Total Retail Werbebudgets und erhöht den ROI.
+---------------------------------------------------------------
+Titel: New Drug Therapy Approvals 2022
+Quelle: FDA.gov
+Kategorie: Wirtschaft
+URL: https://www.fda.gov/drugs/novel-drug-approvals-fda/new-drug-therapy-approvals-2022
+Datum: 2025-06-04 13:21
+ZUSAMMENFASSUNG: Die FDA hat 2022 einen Rekordwert an neuartigen Wirkstoffen zugelassen, darunter mehrere Zell- und Gentherapien, und damit die Innovationskraft in Bereichen wie Onkologie und seltene Erkrankungen deutlich gestärkt. Durch neue Verfahren für beschleunigte Prüfungen und klarere Leitlinien wurden Vorhersagbarkeit und Patientenzugang verbessert. Die Behörde setzt damit einen Schwerpunkt auf effiziente Zulassungsprozesse und breitere Verfügbarkeit wegweisender Therapien.
+---------------------------------------------------------------
+Titel: WATCH: ‘Miracle’ baby saved by medical breakthrough goes home
+Quelle: ABC News
+Kategorie: Der Rund um Blick
+URL: https://abcnews.go.com/GMA/Living/video/miracle-baby-saved-medical-breakthrough-home-122482629
+Datum: 2025-06-04 13:15
+ZUSAMMENFASSUNG: Ein neugeborenes Baby mit lebensbedrohlicher Erkrankung konnte dank eines neu entwickelten medizinischen Verfahrens erfolgreich behandelt werden und wird nun nach Hause entlassen. Der Behandlungserfolg gilt als wichtiger Meilenstein für die Anwendung dieser Methode in der Neonatalmedizin. Experten sehen in dem Fall vielversprechende Perspektiven für die Versorgung anderer schwer erkrankter Säuglinge.
+---------------------------------------------------------------
