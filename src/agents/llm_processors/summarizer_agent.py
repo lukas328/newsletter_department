@@ -20,12 +20,9 @@ class SummarizerAgent(BaseLLMProcessor):
         super().__init__(model_name=model_name, temperature=temperature)
         
         # Definiere das Prompt-Template für die Zusammenfassung.
-        # Für Gemini ist es oft besser, keine explizite System-Rolle zu verwenden,
-        # sondern alle Anweisungen in die "human" (oder "user") Rolle zu packen.
-        # LangChain's ChatGoogleGenerativeAI wandelt System-Nachrichten ggf. um.
         self.prompt_template = ChatPromptTemplate.from_messages([
-            # ("system", "Du bist ein Experte im Verfassen prägnanter Nachrichten-Zusammenfassungen."), # Optional für Gemini
-            ("human", 
+            ("system", "Du bist ein Experte im Verfassen prägnanter Nachrichten-Zusammenfassungen."),
+            ("human",
              """
 Bitte fasse den folgenden Text für einen Newsletter zusammen. Die Zusammenfassung sollte die Kernbotschaft in 2-4 prägnanten Sätzen wiedergeben.
 Konzentriere dich auf die wichtigsten Fakten und Implikationen. Vermeide Füllwörter und unnötige Details.
@@ -70,7 +67,7 @@ ZUSAMMENFASSUNG:""")
         logger.debug(f"Erstelle Zusammenfassung für Titel: '{title}' (Textlänge: {len(text_content)} Zeichen)")
         try:
             # Begrenze die Länge des Inputs, um Token-Limits und Kosten zu managen.
-            # Zeichenlänge ist eine Annäherung. Gemini Modelle haben oft großzügige Limits.
+            # Zeichenlänge ist eine Annäherung. GPT-Modelle haben begrenzte Token-Limits.
             max_input_chars_for_llm = 4000 # Kann je nach Modell angepasst werden
             
             summary_result = self.chain.invoke({
