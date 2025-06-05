@@ -48,6 +48,7 @@ class RawArticle(BaseModel):
     published_at: Optional[datetime] = Field(default=None)
     source_name: Optional[str] = Field(default=None)
     source_id: Optional[str] = Field(default=None) # z.B. von NewsAPI
+    image_url: Optional[HttpUrl] = Field(default=None)
 
     _ensure_published_at_tz_aware = field_validator('published_at', mode='before')(ensure_timezone_aware)
 
@@ -62,6 +63,7 @@ class ProcessedArticle(BaseModel):
     published_at: Optional[datetime] = Field(default=None)
     llm_processing_details: Dict[str, Any] = Field(default_factory=dict)
     article_text: Optional[str] = Field(default=None)
+    image_url: Optional[HttpUrl] = Field(default=None)
 
     _ensure_published_at_tz_aware = field_validator('published_at', mode='before')(ensure_timezone_aware)
 
@@ -103,6 +105,11 @@ class Artwork(BaseModel):
     epoch: Optional[str] = Field(default=None)
     description: Optional[str] = Field(default=None)
     europeana_id: Optional[str] = Field(default=None)
+
+class Quote(BaseModel):
+    text: str
+    author: Optional[str] = Field(default=None)
+
 
 class NewsletterSection(BaseModel):
     title: str 
