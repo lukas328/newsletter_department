@@ -108,7 +108,8 @@ ZUSAMMENFASSUNG:""")
             # Kategorie und Relevanz werden von anderen Agenten hinzugefügt
             source_name=article.source_name,
             published_at=article.published_at,
-            llm_processing_details={"summarizer_model": self.model_name}
+            llm_processing_details={"summarizer_model": self.model_name},
+            image_url=article.image_url
         )
 
     def process_batch(self, articles: List[RawArticle]) -> List[ProcessedArticle]:
