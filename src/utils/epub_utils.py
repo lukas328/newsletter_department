@@ -1,6 +1,7 @@
 from ebooklib import epub
 from typing import List, Optional
-from src.models.data_models import ProcessedArticle, TodoItem
+
+from src.models.data_models import ProcessedArticle, TodoItem, WeatherInfo
 
 
 def _build_a4_style() -> str:
@@ -19,6 +20,10 @@ def generate_epub(
     articles_per_page: int = 1,
     use_a4_css: bool = False,
     todos: Optional[List[TodoItem]] = None,
+    weather_infos: Optional[List[WeatherInfo]] = None,
+    quote_of_the_day: str | None = None,
+    quote_author: str | None = None,
+
 ) -> str:
     """Generiert eine EPUB-Datei aus Artikeln.
 
@@ -28,6 +33,10 @@ def generate_epub(
         articles_per_page: Wie viele Artikel pro EPUB-Seite zusammengefasst werden.
         use_a4_css: Wenn True, wird ein einfaches A4-Stylesheet eingebunden.
         todos: Optionale Liste von TodoItems, die als letztes Kapitel eingefügt werden.
+        weather_infos: Optionale Wettervorhersageeinträge, die als eigenes Kapitel eingefügt werden.
+        quote_of_the_day: Optionaler Motivationstext als Einleitungsseite.
+        quote_author: Autor des Zitats, falls vorhanden.
+
     """
     book = epub.EpubBook()
     book.set_identifier("newsletter")
@@ -45,6 +54,36 @@ def generate_epub(
             content=_build_a4_style(),
         )
         book.add_item(style_item)
+
+
+    if weather_infos:
+        weather_html_parts = []
+        for info in weather_infos:
+            snippet = info.forecast_snippet or ""
+            weather_html_parts.append(f"<p>{snippet}</p>")
+        weather_content = "".join(weather_html_parts)
+        c = epub.EpubHtml(
+            title="Wettervorhersage",
+            file_name="weather.xhtml",
+            lang="de",
+        )
+        c.content = weather_content
+        if style_item:
+            c.add_item(style_item)
+        book.add_item(c)
+        chapters.append(c)
+
+    if quote_of_the_day:
+        quote_chapter = epub.EpubHtml(title="Zitat des Tages", file_name="quote.xhtml", lang="de")
+        content = f"<h1>Zitat des Tages</h1><p>{quote_of_the_day}</p>"
+        if quote_author:
+            content += f"<p>- {quote_author}</p>"
+        quote_chapter.content = content
+        if style_item:
+            quote_chapter.add_item(style_item)
+        book.add_item(quote_chapter)
+        chapters.append(quote_chapter)
+
 
     for start in range(0, len(articles), articles_per_page):
         batch = articles[start : start + articles_per_page]
