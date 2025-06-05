@@ -29,7 +29,7 @@ class CategorizerAgent(BaseLLMProcessor):
     def __init__(self, 
                  categories: List[str], # Die Liste der erlaubten Kategorien
                  model_name: Optional[str] = None,
-                 temperature: float = 0.1): # Sehr niedrige Temperatur für konsistente Kategorisierung
+                 temperature: float = 1): # Sehr niedrige Temperatur für konsistente Kategorisierung
         super().__init__(model_name=model_name, temperature=temperature)
         
         if not categories:
