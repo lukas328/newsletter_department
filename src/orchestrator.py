@@ -10,6 +10,7 @@ from src.models.data_models import RawArticle, ProcessedArticle
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher 
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent # Categorizer importiert
+from src.utils.epub_builder import build_newsletter_epub
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +147,14 @@ class NewsletterOrchestrator:
         except Exception as e:
             logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)
             newsletter_output_path = "Fehler beim Schreiben"
+        # Erstelle zusätzlich eine EPUB-Version des Newsletters
+        epub_path = "tmp/newsletter.epub"
+        try:
+            build_newsletter_epub(final_items_for_newsletter, epub_path)
+            newsletter_output_path = epub_path
+            logger.info(f"EPUB-Newsletter erstellt unter: {epub_path}")
+        except Exception as e:
+            logger.error(f"Fehler beim Erstellen des EPUB-Newsletters: {e}", exc_info=True)
 
         # --- Schritt 5: Newsletter verteilen (Platzhalter) ---
         # ... (bleibt gleich) ...
