@@ -18,8 +18,13 @@ logger = logging.getLogger(__name__)
 
 class NewsletterOrchestrator:
     def __init__(self):
-        load_env() 
+        load_env()
         logger.info("Initialisiere Newsletter Orchestrator...")
+
+        blacklist_raw = get_env_variable("NEWSLETTER_SOURCE_BLACKLIST", "")
+        self.source_blacklist = [s.strip().lower() for s in blacklist_raw.split(',') if s.strip()] if blacklist_raw else []
+        if self.source_blacklist:
+            logger.info(f"Quellen-Blacklist aktiv: {self.source_blacklist}")
 
         self.news_api_fetchers: List[NewsAPIFetcher] = [
             NewsAPIFetcher(query="Künstliche Intelligenz OR Technologie", language="de", endpoint="everything", days_ago=1, page_size=3, source_name_override="KI & Tech News (DE)"), # page_size reduziert für Tests
@@ -78,6 +83,25 @@ class NewsletterOrchestrator:
                 logger.error(f"Fehler beim Abrufen von Daten durch Fetcher '{fetcher.source_name}': {e}", exc_info=True)
         logger.info(f"Insgesamt {len(all_fetched_articles)} Rohartikel von allen Quellen gesammelt.")
         return all_fetched_articles
+
+    def _filter_blacklisted_sources(self, articles: List[RawArticle]) -> List[RawArticle]:
+        """Entfernt Artikel von Quellen, die in der Blacklist stehen."""
+        if not self.source_blacklist:
+            return articles
+
+        filtered: List[RawArticle] = []
+        removed = 0
+        for art in articles:
+            src_id = (art.source_id or "").lower()
+            src_name = (art.source_name or "").lower()
+            if src_id in self.source_blacklist or src_name in self.source_blacklist:
+                removed += 1
+            else:
+                filtered.append(art)
+
+        if removed:
+            logger.info(f"{removed} Artikel aufgrund der Quellen-Blacklist entfernt.")
+        return filtered
 
 
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
@@ -138,9 +162,15 @@ class NewsletterOrchestrator:
         if not raw_articles:
             logger.warning("Keine Rohartikel zum Verarbeiten gefunden.")
             return "Keine Daten gefunden"
-        logger.info(f"{len(raw_articles)} Rohartikel gesammelt.")
-        for i, article in enumerate(raw_articles[:1]): # Nur den ersten Artikel zur Kontrolle loggen
-            logger.debug(f"  Rohartikel {i+1}: {article.title} (Quelle: {article.source_name}, Datum: {article.published_at})")
+        raw_articles = self._filter_blacklisted_sources(raw_articles)
+        if not raw_articles:
+            logger.warning("Alle Artikel wurden von der Blacklist herausgefiltert.")
+            return "Keine Daten nach Blacklist"
+        logger.info(f"{len(raw_articles)} Rohartikel gesammelt (nach Filter).")
+        for i, article in enumerate(raw_articles[:1]):  # Nur den ersten Artikel zur Kontrolle loggen
+            logger.debug(
+                f"  Rohartikel {i+1}: {article.title} (Quelle: {article.source_name}, Datum: {article.published_at})"
+            )
 
         # --- Schritt 2: Daten verarbeiten mit LLMs ---
         processed_articles = self._process_articles_with_llm(raw_articles)
