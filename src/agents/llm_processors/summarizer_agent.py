@@ -114,7 +114,7 @@ ZUSAMMENFASSUNG:""")
             llm_processing_details={"summarizer_model": self.model_name}
         )
 
-    def process_batch(self, articles: List[RawArticle]) -> List[ProcessedArticle]:
+    def process(self, articles: List[RawArticle]) -> List[ProcessedArticle]:
         """
         Verarbeitet eine Liste von RawArticle-Objekten und gibt eine Liste von ProcessedArticle-Objekten
         mit den generierten Zusammenfassungen zurück. (Dies ist die umbenannte `process`-Methode)

@@ -68,7 +68,7 @@ class NewsletterOrchestrator:
 
         logger.info(f"Starte LLM-Verarbeitung (Zusammenfassung) für {len(raw_articles)} Artikel...")
         # Rufe die Batch-Verarbeitungsmethode des Summarizers auf
-        processed_articles = self.summarizer.process_batch(raw_articles)
+        processed_articles = self.summarizer.process(raw_articles)
         logger.info(f"{len(processed_articles)} Artikel erfolgreich zusammengefasst.")
         return processed_articles
 
