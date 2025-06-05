@@ -5,11 +5,13 @@ import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Any, Dict 
 
-from src.utils.config_loader import load_env, get_env_variable 
-from src.models.data_models import RawArticle, ProcessedArticle 
-from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher 
+from src.utils.config_loader import load_env, get_env_variable
+from src.models.data_models import RawArticle, ProcessedArticle
+from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
-from src.agents.llm_processors.categorizer_agent import CategorizerAgent # Categorizer importiert
+from src.agents.llm_processors.categorizer_agent import CategorizerAgent
+from src.utils.epub_utils import generate_epub
+from src.agents.distributors.gdrive_uploader import GDriveUploader
 
 logger = logging.getLogger(__name__)
 
@@ -125,27 +127,46 @@ class NewsletterOrchestrator:
         final_items_for_newsletter = processed_articles 
 
         # --- Schritt 4: Newsletter komponieren (Platzhalter) ---
-        logger.info("Phase 4: Newsletter komponieren (Platzhalter)...")
-        newsletter_output_path = "tmp/platzhalter_newsletter_mit_kategorien.txt" 
-        try:
-            with open(newsletter_output_path, "w", encoding="utf-8") as f:
-                f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
-                f.write("==============================================================\n\n")
-                if final_items_for_newsletter:
-                    for item in final_items_for_newsletter: 
-                        f.write(f"Titel: {item.title if item.title else 'Kein Titel'}\n")
-                        f.write(f"Quelle: {item.source_name if item.source_name else 'Unbekannt'}\n")
-                        f.write(f"Kategorie: {item.category}\n") # Kategorie hinzugefügt
-                        f.write(f"URL: {str(item.url) if item.url else 'Keine URL'}\n")
-                        f.write(f"Datum: {item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Kein Datum'}\n")
-                        f.write(f"ZUSAMMENFASSUNG: {item.summary}\n")
-                        f.write("--------------------------------------------------------------\n")
-                else:
-                    f.write("Keine Artikel für diesen Newsletter gefunden.\n")
-            logger.info(f"Platzhalter-Newsletter (mit Kategorien) erstellt unter: {newsletter_output_path}")
-        except Exception as e:
-            logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)
-            newsletter_output_path = "Fehler beim Schreiben"
+        output_format = get_env_variable("NEWSLETTER_OUTPUT_FORMAT", "txt").lower()
+
+        if output_format == "epub":
+            newsletter_output_path = "tmp/newsletter.epub"
+            try:
+                generate_epub(final_items_for_newsletter, newsletter_output_path)
+                logger.info(f"EPUB erstellt unter: {newsletter_output_path}")
+
+                creds = get_env_variable("GOOGLE_DRIVE_CREDENTIALS_JSON")
+                if creds:
+                    folder_id = get_env_variable("GOOGLE_DRIVE_FOLDER_ID")
+                    try:
+                        uploader = GDriveUploader(creds)
+                        file_id = uploader.upload_file(newsletter_output_path, folder_id)
+                        logger.info(f"EPUB in Google Drive hochgeladen. File ID: {file_id}")
+                    except Exception as e_up:
+                        logger.error(f"Fehler beim Hochladen zu Google Drive: {e_up}", exc_info=True)
+            except Exception as e_epub:
+                logger.error(f"Fehler beim Erstellen des EPUB: {e_epub}", exc_info=True)
+        else:
+            newsletter_output_path = "tmp/platzhalter_newsletter_mit_kategorien.txt"
+            try:
+                with open(newsletter_output_path, "w", encoding="utf-8") as f:
+                    f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
+                    f.write("===============================================================\n\n")
+                    if final_items_for_newsletter:
+                        for item in final_items_for_newsletter:
+                            f.write(f"Titel: {item.title if item.title else 'Kein Titel'}\n")
+                            f.write(f"Quelle: {item.source_name if item.source_name else 'Unbekannt'}\n")
+                            f.write(f"Kategorie: {item.category}\n")
+                            f.write(f"URL: {str(item.url) if item.url else 'Keine URL'}\n")
+                            f.write(f"Datum: {item.published_at.strftime('%Y-%m-%d %H:%M') if item.published_at else 'Kein Datum'}\n")
+                            f.write(f"ZUSAMMENFASSUNG: {item.summary}\n")
+                            f.write("---------------------------------------------------------------\n")
+                    else:
+                        f.write("Keine Artikel für diesen Newsletter gefunden.\n")
+                logger.info(f"Platzhalter-Newsletter (mit Kategorien) erstellt unter: {newsletter_output_path}")
+            except Exception as e:
+                logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)
+                newsletter_output_path = "Fehler beim Schreiben"
 
         # --- Schritt 5: Newsletter verteilen (Platzhalter) ---
         # ... (bleibt gleich) ...
