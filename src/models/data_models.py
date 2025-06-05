@@ -121,3 +121,11 @@ class NewsletterData(BaseModel):
     sections: List[NewsletterSection]
 
     _ensure_generation_date_tz_aware = field_validator('generation_date', mode='before')(ensure_timezone_aware)
+
+class TodoItem(BaseModel):
+    """Simple representation of a Todoist task."""
+
+    id: Optional[int] = Field(default=None)
+    content: str
+
+

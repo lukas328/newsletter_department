@@ -1,6 +1,7 @@
 from ebooklib import epub
 from typing import List, Optional
-from src.models.data_models import ProcessedArticle, WeatherInfo
+
+from src.models.data_models import ProcessedArticle, TodoItem, WeatherInfo
 
 
 def _build_a4_style() -> str:
@@ -18,9 +19,8 @@ def generate_epub(
     output_path: str,
     articles_per_page: int = 1,
     use_a4_css: bool = False,
-
+    todos: Optional[List[TodoItem]] = None,
     weather_infos: Optional[List[WeatherInfo]] = None,
-
     quote_of_the_day: str | None = None,
     quote_author: str | None = None,
 
@@ -32,7 +32,7 @@ def generate_epub(
         output_path: Zielpfad der EPUB-Datei.
         articles_per_page: Wie viele Artikel pro EPUB-Seite zusammengefasst werden.
         use_a4_css: Wenn True, wird ein einfaches A4-Stylesheet eingebunden.
-
+        todos: Optionale Liste von TodoItems, die als letztes Kapitel eingefügt werden.
         weather_infos: Optionale Wettervorhersageeinträge, die als eigenes Kapitel eingefügt werden.
         quote_of_the_day: Optionaler Motivationstext als Einleitungsseite.
         quote_author: Autor des Zitats, falls vorhanden.
@@ -125,6 +125,19 @@ def generate_epub(
         book.add_item(c)
         chapters.append(c)
 
+    if todos:
+        todo_chap = epub.EpubHtml(
+            title="Todo-Liste",
+            file_name="chap_todos.xhtml",
+            lang="de",
+        )
+        items = "".join(f"<li>{t.content}</li>" for t in todos)
+        todo_chap.content = f"<h1>Todo-Liste</h1><ul>{items}</ul>"
+        if style_item:
+            todo_chap.add_item(style_item)
+        book.add_item(todo_chap)
+        chapters.append(todo_chap)
+
     book.toc = tuple(chapters)
     book.add_item(epub.EpubNcx())
     book.add_item(epub.EpubNav())
@@ -132,3 +145,4 @@ def generate_epub(
 
     epub.write_epub(output_path, book)
     return output_path
+
