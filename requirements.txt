@@ -2,7 +2,7 @@
 python-dotenv
 pydantic
 requests
-langchain-google-genai
+langchain-openai
 ebooklib
 google-api-python-client
 google-auth
