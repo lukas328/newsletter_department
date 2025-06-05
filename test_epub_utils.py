@@ -1,5 +1,5 @@
 from src.utils.epub_utils import generate_epub
-from src.models.data_models import ProcessedArticle
+from src.models.data_models import ProcessedArticle, WeatherInfo
 
 
 def test_generate_epub(tmp_path):
@@ -8,6 +8,8 @@ def test_generate_epub(tmp_path):
         ProcessedArticle(title="B", summary="Sum B"),
     ]
     out_file = tmp_path / "test.epub"
+
+    weather = [WeatherInfo(location="Zurich", temperature_celsius=20.0, condition="sonnig", forecast_snippet="Tag 1: 20°C sonnig")]
     generate_epub(
         articles,
         str(out_file),
@@ -15,6 +17,8 @@ def test_generate_epub(tmp_path):
         use_a4_css=True,
         quote_of_the_day="Testquote",
         quote_author="Tester",
+        weather_infos=weather
     )
+
     assert out_file.exists()
 
