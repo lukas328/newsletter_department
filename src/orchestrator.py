@@ -64,6 +64,16 @@ class NewsletterOrchestrator:
             )
             self.article_writer = None
 
+        # Wie viele Artikel sollen voll ausgeschrieben werden?
+        top_n_str = get_env_variable("NEWSLETTER_TOP_ARTICLE_COUNT", "3")
+        try:
+            self.top_article_count = max(1, int(top_n_str))
+        except ValueError:
+            logger.warning(
+                f"Ungültiger Wert '{top_n_str}' für NEWSLETTER_TOP_ARTICLE_COUNT. Verwende Standard 3."
+            )
+            self.top_article_count = 3
+
         logger.info("Newsletter Orchestrator initialisiert.")
 
     def _fetch_all_data(self) -> List[RawArticle]:
@@ -138,11 +148,19 @@ class NewsletterOrchestrator:
 
         # 3. Ausformulierten Artikeltext generieren
         if self.article_writer:
-            logger.info(
-                f"Starte LLM-Verarbeitung (Artikelerstellung) für {len(categorized_articles)} Artikel..."
+            # Nur die Top-N Artikel anhand des Relevanzscores ausformulieren
+            sorted_articles = sorted(
+                categorized_articles,
+                key=lambda a: a.relevance_score or 0,
+                reverse=True,
             )
-            article_texts = self.article_writer.process_batch(categorized_articles)
-            for art, text in zip(categorized_articles, article_texts):
+            top_articles = sorted_articles[: self.top_article_count]
+
+            logger.info(
+                f"Starte LLM-Verarbeitung (Artikelerstellung) für {len(top_articles)} von {len(categorized_articles)} Artikeln (Top {self.top_article_count})."
+            )
+            article_texts = self.article_writer.process_batch(top_articles)
+            for art, text in zip(top_articles, article_texts):
                 art.article_text = text
                 if art.llm_processing_details is None:
                     art.llm_processing_details = {}

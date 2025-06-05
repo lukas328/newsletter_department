@@ -33,6 +33,7 @@ def generate_epub(
     book.set_language("de")
 
     chapters = []
+
     style_item = None
     if use_a4_css:
         style_item = epub.EpubItem(
@@ -65,6 +66,21 @@ def generate_epub(
             c.content = content
         if style_item:
             c.add_item(style_item)
+
+    for idx, article in enumerate(articles, start=1):
+        c = epub.EpubHtml(
+            title=article.title or f"Artikel {idx}",
+            file_name=f"chap_{idx}.xhtml",
+            lang="de",
+        )
+        summary = article.summary.replace("\n", "<br/>") if article.summary else ""
+        article_html = ""
+        if article.article_text:
+            cleaned_text = article.article_text.replace("\n", "<br/>")
+            article_html = f"<div>{cleaned_text}</div>"
+        content = f"<h1>{article.title}</h1><p>{summary}</p>{article_html}"
+        c.content = content
+
         book.add_item(c)
         chapters.append(c)
 
