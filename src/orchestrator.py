@@ -17,9 +17,13 @@ from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
 from src.agents.data_fetchers.google_calendar_fetcher import GoogleCalendarFetcher
 from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetcher
 from src.agents.data_fetchers.zenquotes_fetcher import ZenQuotesFetcher
+from src.agents.data_fetchers.eventbrite_fetcher import EventbriteFetcher
+from src.agents.data_fetchers.openai_web_event_fetcher import OpenAIWebEventFetcher
+from src.agents.data_fetchers.openai_link_event_fetcher import OpenAILinkEventFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
+from src.agents.llm_processors.event_filter_agent import EventFilterAgent
 from src.utils.epub_utils import generate_epub
 from src.utils.birthday_utils import get_upcoming_birthdays
 from src.agents.data_fetchers.birthday_sheet_fetcher import BirthdaySheetFetcher
@@ -60,6 +64,35 @@ class NewsletterOrchestrator:
         else:
             self.calendar_fetcher = None
 
+        # Eventbrite fetcher
+        try:
+            self.eventbrite_fetcher = EventbriteFetcher()
+            logger.info("EventbriteFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des EventbriteFetchers: %s", e, exc_info=True)
+            self.eventbrite_fetcher = None
+
+        # Events via OpenAI web search
+        try:
+            search_query = get_env_variable("EVENT_SEARCH_QUERY", "events in Zurich")
+            self.web_event_fetcher = OpenAIWebEventFetcher(query=search_query)
+            logger.info("OpenAIWebEventFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des OpenAIWebEventFetcher: %s", e, exc_info=True)
+            self.web_event_fetcher = None
+
+        # Events from specific links via OpenAI search
+        links_raw = get_env_variable("EVENT_LINKS", "")
+        self.link_event_fetcher = None
+        if links_raw:
+            urls = [u.strip() for u in links_raw.split(',') if u.strip()]
+            if urls:
+                try:
+                    self.link_event_fetcher = OpenAILinkEventFetcher(urls=urls)
+                    logger.info("OpenAILinkEventFetcher erfolgreich initialisiert.")
+                except Exception as e:
+                    logger.error("Fehler bei der Initialisierung des OpenAILinkEventFetcher: %s", e, exc_info=True)
+
 
         # Weather fetcher for Zurich
         try:
@@ -95,6 +128,13 @@ class NewsletterOrchestrator:
                 f"Fehler bei der Initialisierung des CategorizerAgent: {e}", exc_info=True
             )
             self.categorizer = None
+
+        try:
+            self.event_filter = EventFilterAgent()
+            logger.info("EventFilterAgent erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des EventFilterAgent: %s", e, exc_info=True)
+            self.event_filter = None
 
         try:
             self.article_writer = ArticleWriterAgent()
@@ -201,6 +241,42 @@ class NewsletterOrchestrator:
             logger.error(f"Fehler beim Abrufen der Calendar-Daten: {e}")
             return []
 
+    def _fetch_eventbrite_events(self) -> List[Event]:
+        """Fetch events from Eventbrite if configured."""
+        if not self.eventbrite_fetcher:
+            return []
+        try:
+            events = self.eventbrite_fetcher.fetch_data()
+            logger.info("%d Events von Eventbrite abgerufen.", len(events))
+            return events
+        except Exception as exc:
+            logger.error("Fehler beim Abrufen der Eventbrite-Daten: %s", exc)
+            return []
+
+    def _fetch_web_events(self) -> List[Event]:
+        """Fetch events using OpenAI web search if configured."""
+        if not self.web_event_fetcher:
+            return []
+        try:
+            events = self.web_event_fetcher.fetch_data()
+            logger.info("%d Events von OpenAI Web Search abgerufen.", len(events))
+            return events
+        except Exception as exc:
+            logger.error("Fehler beim Abrufen der Web-Search-Daten: %s", exc)
+            return []
+
+    def _fetch_link_events(self) -> List[Event]:
+        """Fetch events from provided links via OpenAI web search."""
+        if not self.link_event_fetcher:
+            return []
+        try:
+            events = self.link_event_fetcher.fetch_data()
+            logger.info("%d Events von OpenAI Link Search abgerufen.", len(events))
+            return events
+        except Exception as exc:
+            logger.error("Fehler beim Abrufen der Link-Such-Daten: %s", exc)
+            return []
+
 
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
         """Verarbeitet Rohartikel mit LLM-Agenten (Zusammenfassung, dann Kategorisierung)."""
@@ -289,6 +365,13 @@ class NewsletterOrchestrator:
 
         # --- Schritt 3: Zusätzliche Daten abrufen ---
         calendar_events = self._fetch_calendar_events()
+        eventbrite_events = self._fetch_eventbrite_events()
+        web_events = self._fetch_web_events()
+        link_events = self._fetch_link_events()
+        all_events = calendar_events + eventbrite_events + web_events + link_events
+
+        if self.event_filter:
+            all_events = self.event_filter.process_batch(all_events)
 
         # --- Schritt 4: Daten evaluieren ---
         final_items_for_newsletter = sorted(
@@ -356,7 +439,7 @@ class NewsletterOrchestrator:
 
                     extra_chapters=extra_chapters,
 
-                    events=calendar_events,
+                    events=all_events,
                     todos=todos,
                     weather_infos=weather_infos,
                     quote_of_the_day=quote.text if quote else None,
@@ -415,9 +498,9 @@ class NewsletterOrchestrator:
                                 continue
                             f.write(f"- {b.name} am {d.strftime('%d.%m.')}\n")
 
-                    if calendar_events:
+                    if all_events:
                         f.write("\nTermine:\n")
-                        for evt in calendar_events:
+                        for evt in all_events:
                             start = evt.start_time.strftime('%Y-%m-%d %H:%M') if evt.start_time else ''
                             f.write(f"- {evt.summary} {start}\n")
 
