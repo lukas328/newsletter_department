@@ -6,7 +6,13 @@ from datetime import datetime, timezone, date
 from typing import List, Optional, Any, Dict 
 
 from src.utils.config_loader import load_env, get_env_variable
-from src.models.data_models import RawArticle, ProcessedArticle, Event,WeatherInfo
+from src.models.data_models import (
+    RawArticle,
+    ProcessedArticle,
+    Event,
+    WeatherInfo,
+    Quote,
+)
 from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
 from src.agents.data_fetchers.google_calendar_fetcher import GoogleCalendarFetcher
 from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetcher
