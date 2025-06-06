@@ -2,10 +2,12 @@ from ebooklib import epub
 
 from typing import List, Optional, Tuple
 
-
-from typing import List, Optional
-
-from src.models.data_models import ProcessedArticle, Event,  TodoItem, WeatherInfo,ProcessedArticle
+from src.models.data_models import (
+    Event,
+    ProcessedArticle,
+    TodoItem,
+    WeatherInfo,
+)
 
 
 
@@ -89,12 +91,6 @@ def generate_epub(
             chapters.append(c)
 
     chapter_count = len(chapters)
-    for start in range(0, len(articles), articles_per_page):
-        batch = articles[start : start + articles_per_page]
-        idx = chapter_count + (start // articles_per_page) + 1
-        title = batch[0].title or f"Artikel {idx}"
-
-
     if weather_infos:
         weather_html_parts = []
         for info in weather_infos:
@@ -126,7 +122,7 @@ def generate_epub(
 
     for start in range(0, len(articles), articles_per_page):
         batch = articles[start : start + articles_per_page]
-        idx = start // articles_per_page + 1
+        idx = chapter_count + (start // articles_per_page) + 1
 
         c = epub.EpubHtml(
             title=batch[0].title or f"Artikel {idx}",
@@ -142,9 +138,6 @@ def generate_epub(
                 cleaned_text = art.article_text.replace("\n", "<br/>")
                 article_html = f"<div>{cleaned_text}</div>"
             parts.append(f"<h1>{art.title}</h1><p>{summary}</p>{article_html}")
-
-            text = art.article_text.replace("\n", "<br/>") if art.article_text else ""
-            parts.append(f"<h1>{art.title}</h1><p>{summary}</p><div>{text}</div>")
 
         content = "".join(parts)
         if use_a4_css and style_item:

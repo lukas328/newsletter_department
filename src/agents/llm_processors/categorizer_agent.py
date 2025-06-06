@@ -1,10 +1,10 @@
 # newsletter_project/src/agents/llm_processors/categorizer_agent.py
 # LLM-Agent zum Kategorisieren von Texten (z.B. Artikel).
 
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Dict
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser 
-from langchain_core.pydantic_v1 import BaseModel as LangchainBaseModel, Field as LangchainField
+from pydantic import BaseModel as LangchainBaseModel, Field as LangchainField
 from src.models.data_models import ProcessedArticle # Arbeitet jetzt mit ProcessedArticle (hat schon summary)
 from .base_processor import BaseLLMProcessor
 import logging
