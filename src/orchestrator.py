@@ -17,6 +17,8 @@ from src.agents.data_fetchers.newsapi_fetcher import NewsAPIFetcher
 from src.agents.data_fetchers.google_calendar_fetcher import GoogleCalendarFetcher
 from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetcher
 from src.agents.data_fetchers.zenquotes_fetcher import ZenQuotesFetcher
+from src.agents.data_fetchers.eventbrite_fetcher import EventbriteFetcher
+from src.agents.data_fetchers.serpapi_event_fetcher import SerpApiEventFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
@@ -59,6 +61,24 @@ class NewsletterOrchestrator:
                 self.calendar_fetcher = None
         else:
             self.calendar_fetcher = None
+
+        # Eventbrite fetcher
+        try:
+            self.eventbrite_fetcher = EventbriteFetcher()
+            logger.info("EventbriteFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des EventbriteFetchers: %s", e, exc_info=True)
+            self.eventbrite_fetcher = None
+
+        # Google events via SerpAPI
+        try:
+            search_query = get_env_variable("EVENT_SEARCH_QUERY", "events in Zurich")
+            search_location = get_env_variable("EVENT_SEARCH_LOCATION")
+            self.serp_event_fetcher = SerpApiEventFetcher(query=search_query, location=search_location)
+            logger.info("SerpApiEventFetcher erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des SerpApiEventFetchers: %s", e, exc_info=True)
+            self.serp_event_fetcher = None
 
 
         # Weather fetcher for Zurich
@@ -201,6 +221,30 @@ class NewsletterOrchestrator:
             logger.error(f"Fehler beim Abrufen der Calendar-Daten: {e}")
             return []
 
+    def _fetch_eventbrite_events(self) -> List[Event]:
+        """Fetch events from Eventbrite if configured."""
+        if not self.eventbrite_fetcher:
+            return []
+        try:
+            events = self.eventbrite_fetcher.fetch_data()
+            logger.info("%d Events von Eventbrite abgerufen.", len(events))
+            return events
+        except Exception as exc:
+            logger.error("Fehler beim Abrufen der Eventbrite-Daten: %s", exc)
+            return []
+
+    def _fetch_serpapi_events(self) -> List[Event]:
+        """Fetch events from Google search via SerpAPI if configured."""
+        if not self.serp_event_fetcher:
+            return []
+        try:
+            events = self.serp_event_fetcher.fetch_data()
+            logger.info("%d Events von SerpAPI abgerufen.", len(events))
+            return events
+        except Exception as exc:
+            logger.error("Fehler beim Abrufen der SerpAPI-Daten: %s", exc)
+            return []
+
 
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
         """Verarbeitet Rohartikel mit LLM-Agenten (Zusammenfassung, dann Kategorisierung)."""
@@ -289,6 +333,9 @@ class NewsletterOrchestrator:
 
         # --- Schritt 3: Zusätzliche Daten abrufen ---
         calendar_events = self._fetch_calendar_events()
+        eventbrite_events = self._fetch_eventbrite_events()
+        serpapi_events = self._fetch_serpapi_events()
+        all_events = calendar_events + eventbrite_events + serpapi_events
 
         # --- Schritt 4: Daten evaluieren ---
         final_items_for_newsletter = sorted(
@@ -356,7 +403,7 @@ class NewsletterOrchestrator:
 
                     extra_chapters=extra_chapters,
 
-                    events=calendar_events,
+                    events=all_events,
                     todos=todos,
                     weather_infos=weather_infos,
                     quote_of_the_day=quote.text if quote else None,
@@ -415,9 +462,9 @@ class NewsletterOrchestrator:
                                 continue
                             f.write(f"- {b.name} am {d.strftime('%d.%m.')}\n")
 
-                    if calendar_events:
+                    if all_events:
                         f.write("\nTermine:\n")
-                        for evt in calendar_events:
+                        for evt in all_events:
                             start = evt.start_time.strftime('%Y-%m-%d %H:%M') if evt.start_time else ''
                             f.write(f"- {evt.summary} {start}\n")
 

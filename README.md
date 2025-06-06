@@ -1,6 +1,6 @@
 # Newsletter Department
 
-This project contains a small pipeline that fetches news and other information and assembles a simple newsletter. The code is intentionally lightweight so that it can be executed locally without additional infrastructure.
+This project contains a small pipeline that fetches news and other information and assembles a simple newsletter. Besides articles and weather data it can include upcoming events gathered from Eventbrite and Google search (via SerpAPI). The code is intentionally lightweight so that it can be executed locally without additional infrastructure.
 
 ## Setup
 
@@ -39,6 +39,10 @@ The following variables are used by the code (all are optional for testing excep
 - `OPENAI_DEFAULT_MODEL` – model name, default `gpt-3.5-turbo`
 - `OPENWEATHER_API_KEY` – required for weather data
 - `NEWSAPI_API_KEY` – required for news articles
+- `EVENTBRITE_OAUTH_TOKEN` – required for fetching Eventbrite events
+- `SERPAPI_API_KEY` – required for Google search based events
+- `EVENT_SEARCH_QUERY` – query string for SerpAPI event search (default "events in Zurich")
+- `EVENT_SEARCH_LOCATION` – optional location bias for SerpAPI event search
 - `NEWSLETTER_SOURCE_BLACKLIST` – comma separated list of sources to ignore
 - `NEWSLETTER_CATEGORIES` – list of categories for the newsletter
 - `NEWSLETTER_TOP_ARTICLE_COUNT` – number of articles that are fully written
