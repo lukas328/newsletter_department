@@ -380,7 +380,8 @@ class NewsletterOrchestrator:
 
                     if processed_articles:
                         for item in processed_articles:
-
+                            # Platzhalter: eigentliche Verarbeitung ausgelassen
+                            pass
                     if quote:
                         f.write(f"Zitat des Tages: {quote.text}")
                         if quote.author:

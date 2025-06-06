@@ -16,6 +16,7 @@ def test_generate_epub(tmp_path):
 
 
     weather = [WeatherInfo(location="Zurich", temperature_celsius=20.0, condition="sonnig", forecast_snippet="Tag 1: 20°C sonnig")]
+    events = [Event(summary="Test", start_time=None, end_time=None, url=None, source="TestSource")]
     generate_epub(
         articles,
         str(out_file),
@@ -24,7 +25,7 @@ def test_generate_epub(tmp_path):
         quote_of_the_day="Testquote",
         quote_author="Tester",
         weather_infos=weather,
-        events=events
+        events=events,
     )
 
 
