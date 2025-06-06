@@ -1,45 +1,45 @@
-Platzhalter-Newsletter - Erstellt am: 2025-06-05 13:50:25 UTC
+Platzhalter-Newsletter - Erstellt am: 2025-06-05 14:07:33 UTC
 ===============================================================
 
+Titel: iPhone-Wetter: Expertin erklärt, warum die App manchmal komplett daneben liegt
+Quelle: T3n
+Kategorie: IT & AI
+URL: https://t3n.de/news/iphone-wetter-expertin-app-daneben-1640133/
+Datum: 2025-06-04 13:55
+ZUSAMMENFASSUNG: Apples Wetter-App nutzt aggregierte Modelle und interpolierte Daten, die lokale Mikroklimata oft nicht erfassen. Geringe Messstellendichte und verzögerte Aktualisierungen können zu inkorrekten Vorhersagen führen. Nutzer sollten bei Bedarf auf spezialisierte Wetterdienste oder Radarbilder zurückgreifen.
+---------------------------------------------------------------
 Titel: ORF-NÖ-Redakteur Tobias Mayr ausgezeichnet
 Quelle: Noe.orf.at
 Kategorie: Wirtschaft
 URL: https://noe.orf.at/stories/3308281/
 Datum: 2025-06-04 13:24
-ZUSAMMENFASSUNG: ORF-Niederösterreich-Redakteur Tobias Mayr wurde für seine herausragende Reportage „Smartphones, E-Autos und Bitcoins: Wie decken wir den Strombedarf der Zukunft?“ ausgezeichnet. Seine Beiträge analysieren den wachsenden Energiebedarf moderner Technologien und präsentieren konkrete Lösungsansätze für eine nachhaltige Stromversorgung.
+ZUSAMMENFASSUNG: ORF Niederösterreich-Redakteur Tobias Mayr wurde für seine Beiträge zum künftigen Strombedarf ausgezeichnet. In seinen Berichten beleuchtete er den Energie­hunger von Smartphones, E-Autos und Bitcoin und zeigte Lösungen sowie Risiken auf. Die Jury würdigte damit seine präzisen Recherchen und die Relevanz des Themas für die Energie­diskussion.
 ---------------------------------------------------------------
 Titel: Pilgerfahrt mit Drohne und KI: Wie Saudis mit modernster Technologie Massenansturm bewältigen [premium]
 Quelle: Diepresse.com
 Kategorie: IT & AI
 URL: https://www.diepresse.com/19761459/pilgerfahrt-mit-drohne-und-ki-wie-saudis-mit-modernster-technologie-massenansturm-bewaeltigen
 Datum: 2025-06-04 13:18
-ZUSAMMENFASSUNG: Saudi-Arabien nutzt für die Hadsch Drohnen, KI-Überwachungssysteme und einen „Fatwa-Roboter“, um den Ansturm von Millionen Pilgern zu steuern und religiöse Fragen automatisiert zu beantworten. Smart-Apps, VR-Trainingsmodule und Gesundheits-Tracker optimieren Routenführung, Sicherheitskontrollen und medizinische Versorgung. Die Modernisierung verspricht höhere Sicherheit und kürzere Wartezeiten, wirft aber Fragen zu Datenschutz und religiöser Autorität im digitalen Zeitalter auf.
+ZUSAMMENFASSUNG: Saudi-Arabien setzt bei der Hadsch hochauflösende Drohnen, KI-gestützte Analyseplattformen und einen Fatwa-Roboter ein, um Pilgermassen in Echtzeit zu überwachen und zu lenken. Die Technologie optimiert Sicherheitskontrollen, Verkehrsflüsse und die schnelle religiöse Beratung für Millionen von Gläubigen. Damit führt das Königreich die Pilgerfahrt ins digitale Zeitalter und steigert Effizienz sowie Sicherheit.
 ---------------------------------------------------------------
-Titel: Mehr als eine Million Gläubige: Muslimische Pilgerfahrt Hadsch in Mekka begonnen
-Quelle: Der Tagesspiegel
-Kategorie: Kultur und Inspiration
-URL: https://www.tagesspiegel.de/internationales/mehr-als-eine-million-glaubige-muslimische-pilgerfahrt-hadsch-in-mekka-begonnen-13802632.html
-Datum: 2025-06-04 13:05
-ZUSAMMENFASSUNG: Mehr als eine Million Gläubige haben in der Zeltstadt von Mina bei Mekka die Pilgerfahrt Hadsch begonnen. Die saudischen Behörden setzten umfangreiche Sicherheits- und Logistikmaßnahmen ein, um reibungslose Abläufe sicherzustellen. Die Versammlung unterstreicht die zentrale Bedeutung des Hadsch als eine der größten religiösen Zusammenkünfte weltweit.
+Titel: Target Test Prep Named “Test Prep Solution Provider of the Year” in 2025 EdTech Breakthrough Awards Program
+Quelle: GlobeNewswire
+Kategorie: IT & AI
+URL: https://www.globenewswire.com/news-release/2025/06/04/3093712/0/en/Target-Test-Prep-Named-Test-Prep-Solution-Provider-of-the-Year-in-2025-EdTech-Breakthrough-Awards-Program.html
+Datum: 2025-06-04 14:05
+ZUSAMMENFASSUNG: Target Test Prep wurde bei den EdTech Breakthrough Awards 2025 als „Test Prep Solution Provider of the Year“ ausgezeichnet. Die Jury würdigt damit die innovativen Online-Lernlösungen für GMAT, GRE, EA und SAT. Die Auszeichnung bestätigt TTPs führende Marktposition im Bereich digitaler Testvorbereitung.
 ---------------------------------------------------------------
-Titel: Taptap Digital Launches Total Retail to Connect Brand Advertising to Retail Media
-Quelle: ExchangeWire
-Kategorie: Wirtschaft
-URL: https://www.exchangewire.com/blog/2025/06/04/taptap-digital-launches-total-retail-to-connect-brand-advertising-to-retail-media/
-Datum: 2025-06-04 13:37
-ZUSAMMENFASSUNG: Taptap Digital hat Total Retail gestartet, eine Lösung, die Markenwerbung mit Retail Media verknüpft und FMCG-Werbetreibenden über standortbasierte Zielgruppenansprache und einheitliche Erfolgskennzahlen hilft, Handelsumsätze zu steigern. Die Plattform integriert Kampagnenplanung, Aktivierung und Erfolgsmessung über digitale Markenkampagnen und Handelsmedien und liefert Einblicke in Ladenbesuche, In-Store-Verkäufe und Markenwirkung. Durch dynamisches Targeting, Cross-Channel-Attribution und transparente Metriken optimiert Total Retail Werbebudgets und erhöht den ROI.
+Titel: White House Attacks on South Africa Further Expose Trump’s Racist Foreign Policy
+Quelle: Globalresearch.ca
+Kategorie: Welt und Politik
+URL: https://www.globalresearch.ca/attacks-south-africa-trump-racist-foreign-policy/5889621
+Datum: 2025-06-04 14:00
+ZUSAMMENFASSUNG: President Trumps wiederholte Falschbehauptungen gegen Südafrika – von vermeintlicher Enteignung weißer Landwirte bis zur Androhung von Hilfsstreichungen – enthüllen ein Muster rassistischer Rhetorik in seiner Außenpolitik. Seine abfälligen Äußerungen gegenüber afrikanischen Staatschefs haben die Beziehungen zu Südafrika belastet und die Glaubwürdigkeit der USA in Menschenrechtsfragen untergraben. Dieser Angriff zeigt, wie Trumps Vorgehen rassistische Spannungen schürt und langjährige diplomatische Partnerschaften gefährdet.
 ---------------------------------------------------------------
-Titel: New Drug Therapy Approvals 2022
-Quelle: FDA.gov
-Kategorie: Wirtschaft
-URL: https://www.fda.gov/drugs/novel-drug-approvals-fda/new-drug-therapy-approvals-2022
-Datum: 2025-06-04 13:21
-ZUSAMMENFASSUNG: Die FDA hat 2022 einen Rekordwert an neuartigen Wirkstoffen zugelassen, darunter mehrere Zell- und Gentherapien, und damit die Innovationskraft in Bereichen wie Onkologie und seltene Erkrankungen deutlich gestärkt. Durch neue Verfahren für beschleunigte Prüfungen und klarere Leitlinien wurden Vorhersagbarkeit und Patientenzugang verbessert. Die Behörde setzt damit einen Schwerpunkt auf effiziente Zulassungsprozesse und breitere Verfügbarkeit wegweisender Therapien.
----------------------------------------------------------------
-Titel: WATCH: ‘Miracle’ baby saved by medical breakthrough goes home
-Quelle: ABC News
+Titel: Characteristics, Post-exposure prophylaxis usage, and clinical features of Chinese human rabies cases, 2016–2020
+Quelle: Plos.org
 Kategorie: Der Rund um Blick
-URL: https://abcnews.go.com/GMA/Living/video/miracle-baby-saved-medical-breakthrough-home-122482629
-Datum: 2025-06-04 13:15
-ZUSAMMENFASSUNG: Ein neugeborenes Baby mit lebensbedrohlicher Erkrankung konnte dank eines neu entwickelten medizinischen Verfahrens erfolgreich behandelt werden und wird nun nach Hause entlassen. Der Behandlungserfolg gilt als wichtiger Meilenstein für die Anwendung dieser Methode in der Neonatalmedizin. Experten sehen in dem Fall vielversprechende Perspektiven für die Versorgung anderer schwer erkrankter Säuglinge.
+URL: https://journals.plos.org/plosntds/article?id=10.1371/journal.pntd.0013089
+Datum: 2025-06-04 14:00
+ZUSAMMENFASSUNG: Chinesische Tollwutfälle von 2016 bis 2020 traten vor allem in ländlichen Regionen auf, wobei die meisten Betroffenen keine oder unvollständige Post-Expositions-Prophylaxe erhielten. Die typischen Krankheitsverläufe zeigten nach kurzer Inkubationszeit rasch fortschreitende Enzephalitissymptome und eine hohe Letalität. Die Studie unterstreicht den dringenden Bedarf an besserer PEP-Verfügbarkeit, umfassender Aufklärung und verstärkter Überwachung zur Senkung der Tollwutsterblichkeit.
 ---------------------------------------------------------------
