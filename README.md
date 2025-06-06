@@ -1,6 +1,6 @@
 # Newsletter Department
 
-This project contains a small pipeline that fetches news and other information and assembles a simple newsletter. Besides articles and weather data it can include upcoming events gathered from Eventbrite and Google search using the OpenAI web search tool. The code is intentionally lightweight so that it can be executed locally without additional infrastructure.
+This project contains a small pipeline that fetches news and other information and assembles a simple newsletter. Besides articles and weather data it can include upcoming events gathered from Eventbrite and Google search using the OpenAI web search tool. Specific websites can be scanned for events and all results are filtered by an LLM before inclusion. The code is intentionally lightweight so that it can be executed locally without additional infrastructure.
 
 ## Setup
 
@@ -41,6 +41,7 @@ The following variables are used by the code (all are optional for testing excep
 - `NEWSAPI_API_KEY` – required for news articles
 - `EVENTBRITE_OAUTH_TOKEN` – required for fetching Eventbrite events
 - `EVENT_SEARCH_QUERY` – query string for the OpenAI web event search (default "events in Zurich")
+- `EVENT_LINKS` – comma separated list of websites to search for events via OpenAI
 - `NEWSLETTER_SOURCE_BLACKLIST` – comma separated list of sources to ignore
 - `NEWSLETTER_CATEGORIES` – list of categories for the newsletter
 - `NEWSLETTER_TOP_ARTICLE_COUNT` – number of articles that are fully written

@@ -19,9 +19,11 @@ from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetche
 from src.agents.data_fetchers.zenquotes_fetcher import ZenQuotesFetcher
 from src.agents.data_fetchers.eventbrite_fetcher import EventbriteFetcher
 from src.agents.data_fetchers.openai_web_event_fetcher import OpenAIWebEventFetcher
+from src.agents.data_fetchers.openai_link_event_fetcher import OpenAILinkEventFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
+from src.agents.llm_processors.event_filter_agent import EventFilterAgent
 from src.utils.epub_utils import generate_epub
 from src.utils.birthday_utils import get_upcoming_birthdays
 from src.agents.data_fetchers.birthday_sheet_fetcher import BirthdaySheetFetcher
@@ -79,6 +81,18 @@ class NewsletterOrchestrator:
             logger.error("Fehler bei der Initialisierung des OpenAIWebEventFetcher: %s", e, exc_info=True)
             self.web_event_fetcher = None
 
+        # Events from specific links via OpenAI search
+        links_raw = get_env_variable("EVENT_LINKS", "")
+        self.link_event_fetcher = None
+        if links_raw:
+            urls = [u.strip() for u in links_raw.split(',') if u.strip()]
+            if urls:
+                try:
+                    self.link_event_fetcher = OpenAILinkEventFetcher(urls=urls)
+                    logger.info("OpenAILinkEventFetcher erfolgreich initialisiert.")
+                except Exception as e:
+                    logger.error("Fehler bei der Initialisierung des OpenAILinkEventFetcher: %s", e, exc_info=True)
+
 
         # Weather fetcher for Zurich
         try:
@@ -114,6 +128,13 @@ class NewsletterOrchestrator:
                 f"Fehler bei der Initialisierung des CategorizerAgent: {e}", exc_info=True
             )
             self.categorizer = None
+
+        try:
+            self.event_filter = EventFilterAgent()
+            logger.info("EventFilterAgent erfolgreich initialisiert.")
+        except Exception as e:
+            logger.error("Fehler bei der Initialisierung des EventFilterAgent: %s", e, exc_info=True)
+            self.event_filter = None
 
         try:
             self.article_writer = ArticleWriterAgent()
@@ -244,6 +265,18 @@ class NewsletterOrchestrator:
             logger.error("Fehler beim Abrufen der Web-Search-Daten: %s", exc)
             return []
 
+    def _fetch_link_events(self) -> List[Event]:
+        """Fetch events from provided links via OpenAI web search."""
+        if not self.link_event_fetcher:
+            return []
+        try:
+            events = self.link_event_fetcher.fetch_data()
+            logger.info("%d Events von OpenAI Link Search abgerufen.", len(events))
+            return events
+        except Exception as exc:
+            logger.error("Fehler beim Abrufen der Link-Such-Daten: %s", exc)
+            return []
+
 
     def _process_articles_with_llm(self, raw_articles: List[RawArticle]) -> List[ProcessedArticle]:
         """Verarbeitet Rohartikel mit LLM-Agenten (Zusammenfassung, dann Kategorisierung)."""
@@ -334,7 +367,11 @@ class NewsletterOrchestrator:
         calendar_events = self._fetch_calendar_events()
         eventbrite_events = self._fetch_eventbrite_events()
         web_events = self._fetch_web_events()
-        all_events = calendar_events + eventbrite_events + web_events
+        link_events = self._fetch_link_events()
+        all_events = calendar_events + eventbrite_events + web_events + link_events
+
+        if self.event_filter:
+            all_events = self.event_filter.process_batch(all_events)
 
         # --- Schritt 4: Daten evaluieren ---
         final_items_for_newsletter = sorted(
