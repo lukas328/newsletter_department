@@ -284,22 +284,24 @@ class NewsletterOrchestrator:
         # --- Schritt 3: Zusätzliche Daten abrufen ---
         calendar_events = self._fetch_calendar_events()
 
-        # --- Schritt 4: Daten evaluieren (Platzhalter) ---
-
-
-        # --- Schritt 3: Daten evaluieren (Platzhalter) ---
-        final_items_for_newsletter = processed_articles
+        # --- Schritt 4: Daten evaluieren ---
+        final_items_for_newsletter = sorted(
+            processed_articles,
+            key=lambda a: a.relevance_score or 0,
+            reverse=True,
+        )[: self.top_article_count]
 
         extra_chapters = []
+        upcoming_birthdays = []
         if self.birthday_fetcher:
             try:
                 birthdays = self.birthday_fetcher.fetch_data()
-                upcoming = get_upcoming_birthdays(birthdays, 3)
-                if upcoming:
+                upcoming_birthdays = get_upcoming_birthdays(birthdays, 3)
+                if upcoming_birthdays:
                     from datetime import date
 
                     html = "<h1>Bevorstehende Geburtstage</h1><ul>"
-                    for b in upcoming:
+                    for b in upcoming_birthdays:
                         try:
                             d = date(date.today().year, b.date_month, b.date_day)
                         except ValueError:
@@ -378,8 +380,7 @@ class NewsletterOrchestrator:
                     f.write(f"Platzhalter-Newsletter - Erstellt am: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S %Z')}\n")
                     f.write("===============================================================\n\n")
 
-                    if processed_articles:
-                        for item in processed_articles:
+
 
                     if quote:
                         f.write(f"Zitat des Tages: {quote.text}")
@@ -398,11 +399,32 @@ class NewsletterOrchestrator:
                             f.write("------------------------------------------------------------\n")
                     else:
                         f.write("Keine Artikel für diesen Newsletter gefunden.\n")
+                    if upcoming_birthdays:
+                        f.write("\nGeburtstage:\n")
+                        from datetime import date
+                        for b in upcoming_birthdays:
+                            try:
+                                d = date(date.today().year, b.date_month, b.date_day)
+                            except ValueError:
+                                continue
+                            f.write(f"- {b.name} am {d.strftime('%d.%m.')}\n")
+
                     if calendar_events:
                         f.write("\nTermine:\n")
                         for evt in calendar_events:
                             start = evt.start_time.strftime('%Y-%m-%d %H:%M') if evt.start_time else ''
                             f.write(f"- {evt.summary} {start}\n")
+
+                    if todos:
+                        f.write("\nTodos:\n")
+                        for todo in todos:
+                            f.write(f"- {todo.content}\n")
+
+                    if weather_infos:
+                        f.write("\nWettervorhersage:\n")
+                        for info in weather_infos:
+                            snippet = info.forecast_snippet or ""
+                            f.write(f"- {snippet}\n")
                 logger.info(f"Platzhalter-Newsletter (mit Kategorien) erstellt unter: {newsletter_output_path}")
             except Exception as e:
                 logger.error(f"Fehler beim Schreiben des Platzhalter-Newsletters: {e}", exc_info=True)
