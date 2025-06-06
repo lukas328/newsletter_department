@@ -9,7 +9,7 @@ from .todoist_fetcher import TodoistFetcher
 from .europeana_fetcher import EuropeanaFetcher
 from .zenquotes_fetcher import ZenQuotesFetcher
 from .eventbrite_fetcher import EventbriteFetcher
-from .serpapi_event_fetcher import SerpApiEventFetcher
+from .openai_web_event_fetcher import OpenAIWebEventFetcher
 
 __all__ = [
     "BaseDataFetcher",
@@ -21,5 +21,5 @@ __all__ = [
     "EuropeanaFetcher",
     "ZenQuotesFetcher",
     "EventbriteFetcher",
-    "SerpApiEventFetcher",
+    "OpenAIWebEventFetcher",
 ]

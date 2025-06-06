@@ -18,7 +18,7 @@ from src.agents.data_fetchers.google_calendar_fetcher import GoogleCalendarFetch
 from src.agents.data_fetchers.openweathermap_fetcher import OpenWeatherMapFetcher
 from src.agents.data_fetchers.zenquotes_fetcher import ZenQuotesFetcher
 from src.agents.data_fetchers.eventbrite_fetcher import EventbriteFetcher
-from src.agents.data_fetchers.serpapi_event_fetcher import SerpApiEventFetcher
+from src.agents.data_fetchers.openai_web_event_fetcher import OpenAIWebEventFetcher
 from src.agents.llm_processors.summarizer_agent import SummarizerAgent
 from src.agents.llm_processors.categorizer_agent import CategorizerAgent
 from src.agents.llm_processors.article_writer_agent import ArticleWriterAgent
@@ -70,15 +70,14 @@ class NewsletterOrchestrator:
             logger.error("Fehler bei der Initialisierung des EventbriteFetchers: %s", e, exc_info=True)
             self.eventbrite_fetcher = None
 
-        # Google events via SerpAPI
+        # Events via OpenAI web search
         try:
             search_query = get_env_variable("EVENT_SEARCH_QUERY", "events in Zurich")
-            search_location = get_env_variable("EVENT_SEARCH_LOCATION")
-            self.serp_event_fetcher = SerpApiEventFetcher(query=search_query, location=search_location)
-            logger.info("SerpApiEventFetcher erfolgreich initialisiert.")
+            self.web_event_fetcher = OpenAIWebEventFetcher(query=search_query)
+            logger.info("OpenAIWebEventFetcher erfolgreich initialisiert.")
         except Exception as e:
-            logger.error("Fehler bei der Initialisierung des SerpApiEventFetchers: %s", e, exc_info=True)
-            self.serp_event_fetcher = None
+            logger.error("Fehler bei der Initialisierung des OpenAIWebEventFetcher: %s", e, exc_info=True)
+            self.web_event_fetcher = None
 
 
         # Weather fetcher for Zurich
@@ -233,16 +232,16 @@ class NewsletterOrchestrator:
             logger.error("Fehler beim Abrufen der Eventbrite-Daten: %s", exc)
             return []
 
-    def _fetch_serpapi_events(self) -> List[Event]:
-        """Fetch events from Google search via SerpAPI if configured."""
-        if not self.serp_event_fetcher:
+    def _fetch_web_events(self) -> List[Event]:
+        """Fetch events using OpenAI web search if configured."""
+        if not self.web_event_fetcher:
             return []
         try:
-            events = self.serp_event_fetcher.fetch_data()
-            logger.info("%d Events von SerpAPI abgerufen.", len(events))
+            events = self.web_event_fetcher.fetch_data()
+            logger.info("%d Events von OpenAI Web Search abgerufen.", len(events))
             return events
         except Exception as exc:
-            logger.error("Fehler beim Abrufen der SerpAPI-Daten: %s", exc)
+            logger.error("Fehler beim Abrufen der Web-Search-Daten: %s", exc)
             return []
 
 
@@ -334,8 +333,8 @@ class NewsletterOrchestrator:
         # --- Schritt 3: Zusätzliche Daten abrufen ---
         calendar_events = self._fetch_calendar_events()
         eventbrite_events = self._fetch_eventbrite_events()
-        serpapi_events = self._fetch_serpapi_events()
-        all_events = calendar_events + eventbrite_events + serpapi_events
+        web_events = self._fetch_web_events()
+        all_events = calendar_events + eventbrite_events + web_events
 
         # --- Schritt 4: Daten evaluieren ---
         final_items_for_newsletter = sorted(
